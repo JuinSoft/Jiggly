@@ -2,7 +2,7 @@ import explorers from './explorers.json';
 const contracts = {
     //Ethereum Sepolia
     11155111: {
-        redeemableLink: "0xd6f8084fFa6aF6B6b0E1493479a21456457ee071",
+        redeemableLink: "0xf17c556e24085aB1780ac4e44E3Cd4b6aF7a23bD",
         usdc: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
         rpc: "wss://ethereum-sepolia-rpc.publicnode.com",
         explorer: explorers[11155111].explorers[0].url
