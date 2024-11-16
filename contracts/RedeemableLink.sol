@@ -31,7 +31,7 @@ contract RedeemableLink {
     }
 
     // Create a redeemable link by depositing USDC with a unique ID
-    function createLink(string memory id, uint256 amount) external firewallProtected {
+    function createLink(string memory id, uint256 amount) external {
         require(deposits[id].sender == address(0), "ID already exists");
         require(amount > 0, "Amount must be greater than 0");
 
@@ -50,7 +50,7 @@ contract RedeemableLink {
     }
 
     // Redeem the USDC associated with the unique ID
-    function redeem(string memory id) external firewallProtected {
+    function redeem(string memory id) external {
         Deposit storage deposit = deposits[id];
         require(deposit.sender != address(0), "Invalid ID");
         require(!deposit.redeemed, "Already redeemed");
@@ -66,7 +66,7 @@ contract RedeemableLink {
     }
 
     // Allow the owner to withdraw tokens accidentally sent to the contract
-    function withdrawTokens(address token, uint256 amount) external firewallProtected {
+    function withdrawTokens(address token, uint256 amount) external {
         require(msg.sender == owner, "Only owner can withdraw");
         IERC20(token).transfer(owner, amount);
     }
