@@ -1,24 +1,31 @@
 import explorers from './explorers.json';
 const contracts = {
 
+    /*
+
+        NOTE: For testing purposes, we are using the Mock USDC contract for testnets which is fully compatible with ERC20.
+        The below contracts can be replaced with the actual USDC contract for mainnet.
+
+    */
+
     // Ethereum Mainnet
     1: {
-        redeemableLink: "0x0E2c9E13DEB5D2A638511F0C94E65491a8756032",
-        usdc: "0x31d0220469e10c4E71834a79b1f276d740d3768F",
+        redeemableLink: "", // Not supported yet
+        usdc: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",  // Actual USDC Contract
         rpc: "https://mainnet.infura.io",
         explorer: explorers[1].explorers[0].url
     },
     //Ethereum Sepolia
     11155111: {
-        redeemableLink: "0xf17c556e24085aB1780ac4e44E3Cd4b6aF7a23bD",
-        usdc: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238",
+        redeemableLink: "",
+        usdc: "",
         rpc: "wss://ethereum-sepolia-rpc.publicnode.com",
         explorer: explorers[11155111].explorers[0].url
     },
     // Unichain Testnet
     1301: {
-        redeemableLink: "0x0E2c9E13DEB5D2A638511F0C94E65491a8756032",
-        usdc: "0x31d0220469e10c4E71834a79b1f276d740d3768F",
+        redeemableLink: "",
+        usdc: "",
         rpc: "https://sepolia.unichain.org",
         explorer: explorers[1301].explorers[0].url
     },
@@ -33,28 +40,106 @@ const contracts = {
     
     // Polygon Amoy
     80002: {
-        // redeemableLink: "0x71A7dac14d9FdE4396A800209c29d2Af2Ff6E6d7",
-        // usdc: "0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582",
-        redeemableLink: "0x38ecb7Aff1f657c7E84B2cFe23F6596Ce41E0aac",
-        usdc: "0x3b3153fF11b5C73e29d1CfaF0A45bB3263872e9D",
+        redeemableLink: "",
+        usdc: "",
         rpc: "wss://polygon-amoy-bor-rpc.publicnode.com",
         explorer: "https://www.oklink.com/amoy"
     },
 
     // Hedera Testnet
     296: {
-        redeemableLink: "0x9719e29BcE3AF1ac6aF40D90e346Bcfd3D79fE25",
-        usdc: "0x0000000000000000000000000000000000068cda",
+        redeemableLink: "",
+        usdc: "",
         rpc: "https://testnet.hashio.io/api",
         explorer: "https://hashscan.io/testnet"
     },
 
     // Polygon Mainnet
     137: {
-        redeemableLink: "",
+        redeemableLink: "", // Not supported yet
         usdc: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
         rpc: "https://polygon-mainnet.infura.io",
         explorer: explorers[137].explorers[0].url
+    },
+
+    //  Flow Testnet
+    545: {
+        redeemableLink: "", // Not supported yet
+        usdc: "", // Actual USDC Contract
+        rpc: "https://testnet.evm.nodes.onflow.org",
+        explorer: "https://evm-testnet.flowscan.io"
+    },
+
+    // Unichain V4 Testnet
+    1301: {
+        redeemableLink: "", // Not supported yet
+        usdc: "", // Actual USDC Contract
+        rpc: "https://sepolia.unichain.org",
+        explorer: explorers[1301].explorers[0].url
+    },
+
+    // Scroll Sepolia Testnet
+    534351: {
+        redeemableLink: "", // Not supported yet
+        usdc: "", // Actual USDC Contract
+        rpc: "https://sepolia.scroll.io",
+        explorer: explorers[534351].explorers[0].url
+    },
+
+    // Mantle Testnet
+    5003: {
+        redeemableLink: "", // Not supported yet
+        usdc: "", // Actual USDC Contract
+        rpc: "https://rpc.sepolia.mantle.xyz/",
+        explorer: explorers[5003].explorers[0].url
+    },
+
+    // Inco Rivest Testnet
+    21097: {
+        redeemableLink: "", // Not supported yet
+        usdc: "", // Actual USDC Contract
+        rpc: "https://validator.rivest.inco.org",
+        explorer: "https://explorer.rivest.inco.org"
+    },
+
+    // Hedera Testnet
+    296: {
+        redeemableLink: "", // Not supported yet
+        usdc: "", // Actual USDC Contract
+        rpc: "https://testnet.hashio.io/api",
+        explorer: "https://hashscan.io/testnet"
+    },
+
+    // Zircuit Testnet
+    48899: {
+        redeemableLink: "", // Not supported yet
+        usdc: "", // Actual USDC Contract
+        rpc: "https://zircuit1-testnet.liquify.com",
+        explorer: "https://explorer.testnet.zircuit.com"
+    },
+
+    // Rootstock Testnet
+    31: {
+        redeemableLink: "", // Not supported yet
+        usdc: "", // Actual USDC Contract
+        rpc: "https://public-node.testnet.rsk.co",
+        explorer: "https://explorer.testnet.rootstock.io/"
+    },
+
+    // Morpho Testnet
+    2810: {
+        redeemableLink: "", // Not supported yet
+        usdc: "", // Actual USDC Contract
+        rpc: "https://rpc-holesky.morphl2.io",
+        explorer: explorers[2810].explorers[0].url
+    },
+
+    // Linea Sepolia Testnet
+    59141: {
+        redeemableLink: "", // Not supported yet
+        usdc: "", // Actual USDC Contract
+        rpc: "https://linea-sepolia.blockpi.network/v1/rpc/public",
+        explorer: "https://sepolia.lineascan.build"
     }
 };
 

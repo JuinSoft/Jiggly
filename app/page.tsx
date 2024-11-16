@@ -563,10 +563,10 @@ export default function Main() {
             Quick Actions
           </h2>
           <Button onClick={handleQuickAction} className="w-full mb-2">
-            Create USDC
+            Create Sharable Links for USDC
           </Button>
           <Button onClick={handleRedeemAction} className="w-full mb-2">
-            Redeem Token
+            Redeem Shared Tokens
           </Button>
           <Button onClick={handleConnectionsAction} className="w-full mb-2">
             View Connections
