@@ -9,7 +9,7 @@ body {
 }
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Londrina', Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -35,4 +35,22 @@ a {
   :root {
     --radius: 0.5rem;
   }
+}
+
+@font-face {
+  font-family: 'Londrina';
+  src: url('/fonts/Londrina_Solid/LondrinaSolid-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Silkscreen';
+  src: url('/fonts/Silkscreen/Silkscreen-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.font-silkscreen {
+  font-family: 'Silkscreen', Arial, Helvetica, sans-serif;
 }
