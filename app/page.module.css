@@ -166,3 +166,27 @@ a.secondary {
     filter: invert();
   }
 }
+
+.partnerLogos {
+  margin-top: 20px;
+  padding: 16px;
+  background-color: #fff;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.partnerLogosContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+  gap: 16px;
+  justify-items: center;
+  width: 100%;
+  overflow: hidden;
+}
+
+.partnerLogoImage {
+  /* width: 64px; */
+  /* height: 64px; */
+  object-fit: cover;
+}

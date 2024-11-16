@@ -54,3 +54,17 @@ a {
 .font-silkscreen {
   font-family: 'Silkscreen', Arial, Helvetica, sans-serif;
 }
+
+.partner-logos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  width: 100%;
+}
+
+.partner-logos img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+}

@@ -9,7 +9,7 @@ const contracts = {
     },
     // Unichain Testnet
     1301: {
-        redeemableLink: "0xd6f8084fFa6aF6B6b0E1493479a21456457ee071",
+        redeemableLink: "0x0E2c9E13DEB5D2A638511F0C94E65491a8756032",
         usdc: "0x31d0220469e10c4E71834a79b1f276d740d3768F",
         rpc: "https://sepolia.unichain.org",
         explorer: explorers[1301].explorers[0].url
@@ -25,7 +25,7 @@ const contracts = {
     
     // Polygon Amos
     80002: {
-        redeemableLink: "0xd6f8084fFa6aF6B6b0E1493479a21456457ee071",
+        redeemableLink: "0x71A7dac14d9FdE4396A800209c29d2Af2Ff6E6d7",
         usdc: "0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582",
         rpc: "wss://polygon-amoy-bor-rpc.publicnode.com",
         explorer: "https://www.oklink.com/amoy"
@@ -33,8 +33,8 @@ const contracts = {
 
     // Hedera Testnet
     296: {
-        redeemableLink: "0xd6f8084fFa6aF6B6b0E1493479a21456457ee071",
-        usdc: "0.0.429274",
+        redeemableLink: "0x9719e29BcE3AF1ac6aF40D90e346Bcfd3D79fE25",
+        usdc: "0x0000000000000000000000000000000000068cda",
         rpc: "https://testnet.hashio.io/api",
         explorer: "https://hashscan.io/testnet"
     }

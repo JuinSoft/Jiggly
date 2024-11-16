@@ -19,8 +19,25 @@ import { isEthereumWallet } from "@dynamic-labs/ethereum";
 import { getContractByNetworkId } from "../constants/contracts";
 import { usdcContractAbi } from "../constants/abi";
 import { parseGwei } from "viem";
+import styles from './page.module.css';
+
+async function fetchPartnerLogos() {
+  const response = await fetch('/api/partnerLogos');
+  if (!response.ok) {
+    throw new Error('Failed to fetch partner logos');
+  }
+  return response.json();
+}
 
 export default function Main() {
+  const [partnerLogos, setPartnerLogos] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetchPartnerLogos()
+      .then(setPartnerLogos)
+      .catch((error) => console.error(error));
+  }, []);
+
   // State hooks
   const [messages, setMessages] = useState<{ role: string; content: string }[]>(
     []
@@ -238,6 +255,28 @@ export default function Main() {
             </Link>
           ))}
         </nav>
+
+        {/* Partner Logos Section */}
+        <div className={styles.partnerLogos}>
+          <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Our Partners</h2>
+          <motion.div
+            className="overflow-hidden w-full"
+            initial={{ y: "100%" }}
+            animate={{ y: "0%" }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          >
+            <div className={styles.partnerLogosContainer}>
+              {partnerLogos.map((logo, index) => (
+                <img
+                  key={index}
+                  src={`/partner-logos/${logo}`}
+                  alt={`${logo}`}
+                  className={styles.partnerLogoImage}
+                />
+              ))}
+            </div>
+          </motion.div>
+        </div>
       </motion.div>
 
       {/* Main Content */}
