@@ -7,7 +7,7 @@ interface IERC20 {
     function balanceOf(address account) external view returns (uint256);
 }
 
-contract RedeemableLink is VennFirewallConsumer {
+contract RedeemableLink {
     IERC20 public usdcToken;
     address public owner;
 
