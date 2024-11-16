@@ -301,6 +301,8 @@ export default function Main() {
       ) {
         // Format clarification questions
         assistantMessage = parsedResponse.questions.join("\n");
+      } else if (parsedResponse.type === "unknown") {
+        assistantMessage = parsedResponse.message || parsedResponse.additionalInfo || "I don't understand that request.";
       } else if (parsedResponse.type !== "unknown") {
         await handleTransaction(parsedResponse);
         assistantMessage =
