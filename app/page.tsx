@@ -1,51 +1,53 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect, useRef, FormEvent } from 'react';
-import { motion, AnimatePresence } from "framer-motion"
-import { Bell, Home, Mail, MessageSquare, Send, User } from "lucide-react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { DynamicWidget } from '@dynamic-labs/sdk-react-core';
-import { useDynamicContext } from '@dynamic-labs/sdk-react-core'
-import { useRouter } from 'next/navigation';
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
-import axios from 'axios';
-import { createRedeemableLink, redeemLink } from '@/lib/contracts';
-import { getWeb3Provider,getSigner, } from '@dynamic-labs/ethers-v6'
-import { isEthereumWallet } from '@dynamic-labs/ethereum'
-import { getContractByNetworkId } from '../constants/contracts'
-import { usdcContractAbi } from '../constants/abi'
-import { parseGwei } from 'viem';
+import React, { useState, useEffect, useRef, FormEvent } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Bell, Home, Mail, MessageSquare, Send, User } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { DynamicWidget } from "@dynamic-labs/sdk-react-core";
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import axios from "axios";
+import { createRedeemableLink, redeemLink } from "@/lib/contracts";
+import { getWeb3Provider, getSigner } from "@dynamic-labs/ethers-v6";
+import { isEthereumWallet } from "@dynamic-labs/ethereum";
+import { getContractByNetworkId } from "../constants/contracts";
+import { usdcContractAbi } from "../constants/abi";
+import { parseGwei } from "viem";
 
 export default function Main() {
   // State hooks
-  const [messages, setMessages] = useState<{ role: string; content: string }[]>([])
-  const [input, setInput] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [messages, setMessages] = useState<{ role: string; content: string }[]>(
+    []
+  );
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   // Refs
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Context and router hooks
-  const pathname = usePathname()
-  const { user, primaryWallet, network } = useDynamicContext()
+  const pathname = usePathname();
+  const { user, primaryWallet, network } = useDynamicContext();
   const router = useRouter();
 
   // Authentication effect
   useEffect(() => {
     if (!user) {
-      router.push('/login');
+      router.push("/login");
     }
   }, [user, router]);
 
   // Scroll effect
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   if (!user) {
     return null;
@@ -55,12 +57,12 @@ export default function Main() {
     { name: "My Account", icon: User, href: "/account" },
     { name: "My Contacts", icon: Home, href: "/contacts" },
     { name: "My Messages", icon: MessageSquare, href: "/messages" },
-    { name: "Notifications", icon: Bell, href: "/notifications" }
-  ]
-  
+    { name: "Notifications", icon: Bell, href: "/notifications" },
+  ];
+
   const handleTransaction = async (response: any) => {
     if (!primaryWallet) {
-      console.error('No wallet connected');
+      console.error("No wallet connected");
       return;
     }
 
@@ -70,23 +72,23 @@ export default function Main() {
         const publicClient = await primaryWallet.getPublicClient();
 
         switch (response.type) {
-          case 'link_create':
+          case "link_create":
             const balance = await publicClient.readContract({
               address: getContractByNetworkId(Number(network)).usdc,
               abi: usdcContractAbi,
-              functionName: 'balanceOf',
+              functionName: "balanceOf",
               args: [primaryWallet.address],
             });
 
             if (Number(balance) < response.amount) {
-              console.error('Insufficient balance');
+              console.error("Insufficient balance");
               return;
             }
 
             const approveAmount = await publicClient.readContract({
               address: getContractByNetworkId(Number(network)).usdc,
               abi: usdcContractAbi,
-              functionName: 'allowance',
+              functionName: "allowance",
               args: [
                 primaryWallet.address,
                 getContractByNetworkId(Number(network)).redeemableLink,
@@ -97,8 +99,11 @@ export default function Main() {
               const approveTx = await client.writeContract({
                 address: getContractByNetworkId(Number(network)).usdc,
                 abi: usdcContractAbi,
-                functionName: 'approve',
-                args: [getContractByNetworkId(Number(network)).redeemableLink, BigInt(response.amount)],
+                functionName: "approve",
+                args: [
+                  getContractByNetworkId(Number(network)).redeemableLink,
+                  BigInt(response.amount),
+                ],
               });
               await publicClient.waitForTransactionReceipt({ hash: approveTx });
             }
@@ -113,11 +118,11 @@ export default function Main() {
         }
         return;
       } else {
-        console.error('Not supported');
+        console.error("Not supported");
         return;
       }
     } catch (error) {
-      console.error('Transaction failed:', error);
+      console.error("Transaction failed:", error);
     }
   };
 
@@ -130,22 +135,35 @@ export default function Main() {
     setInput("");
 
     try {
-      const response = await axios.post('/api/chat', { message: input });
+      const response = await axios.post("/api/chat", { message: input });
       const parsedResponse = response.data;
-      
-      if (parsedResponse.type !== 'unknown') {
+
+      let assistantMessage = "";
+
+      if (parsedResponse.type === "clarification" && Array.isArray(parsedResponse.questions)) {
+        // Format clarification questions
+        assistantMessage = parsedResponse.questions.join("\n");
+      } else if (parsedResponse.type !== "unknown") {
         await handleTransaction(parsedResponse);
+        assistantMessage =
+          parsedResponse.additionalInfo ||
+          "Transaction processed successfully.";
+      } else {
+        assistantMessage = parsedResponse.additionalInfo;
       }
-      
+
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: parsedResponse.additionalInfo },
+        { role: "assistant", content: assistantMessage },
       ]);
     } catch (error) {
-      console.error('Error fetching chat response:', error);
+      console.error("Error fetching chat response:", error);
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Sorry, I couldn't process your request." },
+        {
+          role: "assistant",
+          content: "Sorry, I couldn't process your request.",
+        },
       ]);
     } finally {
       setIsLoading(false);
@@ -184,7 +202,7 @@ export default function Main() {
   // }
 
   return (
-    <div className={`flex h-screen bg-gray-50 ${isDarkMode ? 'dark' : ''}`}>
+    <div className={`flex h-screen bg-gray-50 ${isDarkMode ? "dark" : ""}`}>
       {/* Sidebar */}
       <motion.div
         initial={{ x: -300, opacity: 0 }}
@@ -195,7 +213,9 @@ export default function Main() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className={`mb-6 text-2xl font-bold ${
-            pathname === "/account" ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:text-gray-900"
+            pathname === "/account"
+              ? "bg-gray-100 text-gray-900"
+              : "text-gray-600 hover:text-gray-900"
           }`}
         >
           Jiggly
@@ -207,7 +227,9 @@ export default function Main() {
                 whileHover={{ scale: 1.02, backgroundColor: "#f3f4f6" }}
                 whileTap={{ scale: 0.98 }}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-                  pathname === item.href ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:text-gray-900"
+                  pathname === item.href
+                    ? "bg-gray-100 text-gray-900"
+                    : "text-gray-600 hover:text-gray-900"
                 }`}
               >
                 <item.icon className="h-4 w-4" />
@@ -221,7 +243,7 @@ export default function Main() {
       {/* Main Content */}
       <div className="flex flex-1 flex-col">
         <div className="flex items-center bg-gray-200 text-[#121212] px-4 py-2 rounded-full text-sm">
-          <div className="flex-1" style={{ width: '80%' }}>
+          <div className="flex-1" style={{ width: "80%" }}>
             <DynamicWidget />
           </div>
           <Button onClick={() => setIsDarkMode(!isDarkMode)} className="ml-2">
@@ -231,7 +253,10 @@ export default function Main() {
         <main className="flex-1 p-4">
           <Card className="flex h-full flex-col bg-white dark:bg-gray-900">
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+            <div
+              className="flex-1 overflow-y-auto p-4"
+              style={{ maxHeight: "calc(100vh - 200px)" }}
+            >
               <AnimatePresence>
                 {messages.map((message, index) => (
                   <motion.div
@@ -239,7 +264,9 @@ export default function Main() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    className={`mb-4 flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                    className={`mb-4 flex ${
+                      message.role === "user" ? "justify-end" : "justify-start"
+                    }`}
                   >
                     <div
                       className={`rounded-lg px-4 py-2 ${
@@ -272,7 +299,11 @@ export default function Main() {
                   {isLoading ? (
                     <motion.div
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
                     >
                       <Mail className="h-4 w-4" />
                     </motion.div>
@@ -287,5 +318,5 @@ export default function Main() {
         </main>
       </div>
     </div>
-  )
+  );
 }
