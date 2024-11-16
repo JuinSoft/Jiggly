@@ -235,6 +235,23 @@ export const zksync = defineChain({
   },
 })
 
+export const bitkub = defineChain({
+  id: 96,
+  name: 'Bitkub',
+  rpcUrls: {
+    default: { http: ['https://rpc.bitkubchain.io'] },
+    public: { http: ['https://rpc.bitkubchain.io'] }
+  },
+  blockExplorers: {
+    default: { name: "Bitkub", url: explorers['96'].explorers[0].url }
+  },
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Bitkub Coin',
+    symbol: 'KUB'
+  },
+})
+
 const supportedNetworks = [
   arbitrum,
   aurora,

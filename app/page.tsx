@@ -55,7 +55,7 @@ export default function Main() {
     { name: "Notifications", icon: Bell, href: "/notifications" }
   ]
   
-  const handleTransaction = async (response) => {
+  const handleTransaction = async (response: any) => {
     if (!primaryWallet) {
       console.error('No wallet connected');
       return;
@@ -127,7 +127,9 @@ export default function Main() {
         <motion.h1
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mb-6 text-2xl font-bold dark:text-white"
+          className={`mb-6 text-2xl font-bold ${
+            pathname === "/account" ? "bg-gray-100 text-gray-900" : "text-gray-600 hover:text-gray-900"
+          }`}
         >
           Jiggly
         </motion.h1>
@@ -162,7 +164,7 @@ export default function Main() {
         <main className="flex-1 p-4">
           <Card className="flex h-full flex-col bg-white dark:bg-gray-900">
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-4" style={{ maxHeight: 'calc(100vh - 200px)' }}>
               <AnimatePresence>
                 {messages.map((message, index) => (
                   <motion.div
