@@ -293,7 +293,6 @@ export default function Main() {
     try {
       const response = await axios.post("/api/chat", { message: input });
       const parsedResponse = response.data;
-      console.log("parsedResponse: ", parsedResponse);
       let assistantMessage = "";
       if (
         parsedResponse.type === "clarification" &&
@@ -606,12 +605,21 @@ export default function Main() {
                 >
                   {Object.entries(contracts).map(([networkId, contract]) => {
                     const networkNames = {
+                      "1": "Ethereum Mainnet",
                       "11155111": "Ethereum Sepolia",
-                      "1301": "Unichain Testnet",
                       "314159": "Filecoin Calibration Testnet",
                       "80002": "Polygon Amoy",
                       "296": "Hedera Testnet",
                       "137": "Polygon Mainnet",
+                      "545": "Flow Testnet",
+                      "1301": "Unichain V4 Testnet",
+                      "534351": "Scroll Sepolia Testnet",
+                      "5003": "Mantle Testnet",
+                      "21097": "Inco Rivest Testnet",
+                      "48899": "Zircuit Testnet",
+                      "31": "Rootstock Testnet",
+                      "2810": "Morpho Testnet",
+                      "59141": "Linea Sepolia Testnet",
                     };
                     return (
                       <option key={networkId} value={networkId}>
@@ -658,12 +666,19 @@ export default function Main() {
                 >
                   {Object.entries(contracts).map(([networkId, contract]) => {
                     const networkNames = {
+                      "1": "Ethereum Mainnet",
                       "11155111": "Ethereum Sepolia",
                       "1301": "Unichain Testnet",
                       "314159": "Filecoin Calibration Testnet",
                       "80002": "Polygon Amoy",
                       "296": "Hedera Testnet",
                       "137": "Polygon Mainnet",
+                      "545": "Flow Testnet",
+                      "21097": "Inco Rivest Testnet",
+                      "48899": "Zircuit Testnet",
+                      "31": "Rootstock Testnet",
+                      "2810": "Morpho Testnet",
+                      "59141": "Linea Sepolia Testnet",
                     };
                     return (
                       <option key={networkId} value={networkId}>
@@ -702,16 +717,30 @@ export default function Main() {
                       <option key={networkId} value={networkId}>
                         {networkId === "1"
                           ? "Ethereum Mainnet"
+                          : networkId === "11155111"
+                          ? "Ethereum Sepolia"
                           : networkId === "1301"
                           ? "Unichain Testnet"
-                          : networkId === "314"
-                          ? "Filecoin Mainnet"
+                          : networkId === "314159"
+                          ? "Filecoin Calibration Testnet"
+                          : networkId === "80002"
+                          ? "Polygon Amoy"
+                          : networkId === "296"
+                          ? "Hedera Testnet"
                           : networkId === "137"
                           ? "Polygon Mainnet"
-                          : networkId === "295"
-                          ? "Hedera Mainnet"
-                          : networkId === "56"
-                          ? "Binance Smart Chain Mainnet"
+                          : networkId === "545"
+                          ? "Flow Testnet"
+                          : networkId === "21097"
+                          ? "Inco Rivest Testnet"
+                          : networkId === "48899"
+                          ? "Zircuit Testnet"
+                          : networkId === "31"
+                          ? "Rootstock Testnet"
+                          : networkId === "2810"
+                          ? "Morpho Testnet"
+                          : networkId === "59141"
+                          ? "Linea Sepolia Testnet"
                           : `Network ${networkId}`}
                       </option>
                     ))}
@@ -730,18 +759,32 @@ export default function Main() {
                     <option value="">Select Chain</option>
                     {Object.entries(contracts).map(([networkId]) => (
                       <option key={networkId} value={networkId}>
-                        {networkId === "11155111"
+                        {networkId === "1"
+                          ? "Ethereum Mainnet"
+                          : networkId === "11155111"
                           ? "Ethereum Sepolia"
                           : networkId === "1301"
-                          ? "Unichain Testnet"
+                          ? "Unichain V4 Testnet"
                           : networkId === "314159"
-                          ? "Filecoin Calibration"
+                          ? "Filecoin Calibration Testnet"
                           : networkId === "80002"
                           ? "Polygon Amoy"
-                          : networkId === "296"
-                          ? "Hedera Testnet"
                           : networkId === "137"
                           ? "Polygon Mainnet"
+                          : networkId === "296"
+                          ? "Hedera Testnet"
+                          : networkId === "545"
+                          ? "Flow Testnet"
+                          : networkId === "21097"
+                          ? "Inco Rivest Testnet"
+                          : networkId === "48899"
+                          ? "Zircuit Testnet"
+                          : networkId === "31"
+                          ? "Rootstock Testnet"
+                          : networkId === "2810"
+                          ? "Morpho Testnet"
+                          : networkId === "59141"
+                          ? "Linea Sepolia Testnet"
                           : `Network ${networkId}`}
                       </option>
                     ))}
@@ -834,12 +877,20 @@ export default function Main() {
                     {Object.entries(contracts).map(([networkId]) => (
                       <option key={networkId} value={networkId}>
                         {networkId === "11155111" ? "Ethereum Sepolia" :
-                         networkId === "1301" ? "Unichain Testnet" :
-                         networkId === "314159" ? "Filecoin Calibration" :
+                         networkId === "1301" ? "Unichain V4 Testnet" :
+                         networkId === "314159" ? "Filecoin Calibration Testnet" :
                          networkId === "80002" ? "Polygon Amoy" :
                          networkId === "296" ? "Hedera Testnet" :
                          networkId === "137" ? "Polygon Mainnet" :
                          networkId === "1" ? "Ethereum Mainnet" :
+                         networkId === "545" ? "Flow Testnet" :
+                         networkId === "21097" ? "Inco Rivest Testnet" :
+                         networkId === "48899" ? "Zircuit Testnet" :
+                         networkId === "31" ? "Rootstock Testnet" :
+                         networkId === "2810" ? "Morpho Testnet" :
+                         networkId === "59141" ? "Linea Sepolia Testnet" :
+                         networkId === "534351" ? "Scroll Sepolia Testnet" :
+                         networkId === "5003" ? "Mantle Testnet" :
                          `Network ${networkId}`}
                       </option>
                     ))}
@@ -858,13 +909,21 @@ export default function Main() {
                     <option value="">Select Destination Chain</option>
                     {Object.entries(contracts).map(([networkId]) => (
                       <option key={networkId} value={networkId}>
-                        {networkId === "11155111" ? "Ethereum Sepolia" :
-                         networkId === "1301" ? "Unichain Testnet" :
-                         networkId === "314159" ? "Filecoin Calibration" :
-                         networkId === "80002" ? "Polygon Amoy" :
-                         networkId === "296" ? "Hedera Testnet" :
+                        {networkId === "1" ? "Ethereum Mainnet" :
+                         networkId === "11155111" ? "Ethereum Sepolia" :
                          networkId === "137" ? "Polygon Mainnet" :
-                         networkId === "1" ? "Ethereum Mainnet" :
+                         networkId === "80002" ? "Polygon Amoy" :
+                         networkId === "314159" ? "Filecoin Calibration Testnet" :
+                         networkId === "296" ? "Hedera Testnet" :
+                         networkId === "545" ? "Flow Testnet" :
+                         networkId === "1301" ? "Unichain V4 Testnet" :
+                         networkId === "21097" ? "Inco Rivest Testnet" :
+                         networkId === "48899" ? "Zircuit Testnet" :
+                         networkId === "31" ? "Rootstock Testnet" :
+                         networkId === "2810" ? "Morpho Testnet" :
+                         networkId === "534351" ? "Scroll Sepolia Testnet" :
+                         networkId === "59141" ? "Linea Sepolia Testnet" :
+                         networkId === "5003" ? "Mantle Testnet" :
                          `Network ${networkId}`}
                       </option>
                     ))}
