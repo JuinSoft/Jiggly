@@ -1,5 +1,13 @@
 import explorers from './explorers.json';
 const contracts = {
+
+    // Ethereum Mainnet
+    1: {
+        redeemableLink: "0x0E2c9E13DEB5D2A638511F0C94E65491a8756032",
+        usdc: "0x31d0220469e10c4E71834a79b1f276d740d3768F",
+        rpc: "https://mainnet.infura.io",
+        explorer: explorers[1].explorers[0].url
+    },
     //Ethereum Sepolia
     11155111: {
         redeemableLink: "0xf17c556e24085aB1780ac4e44E3Cd4b6aF7a23bD",

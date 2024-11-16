@@ -18,9 +18,14 @@ import { usdcContractAbi, redeemableLinkAbi } from "../constants/abi";
 import { parseGwei } from "viem";
 import styles from "./page.module.css";
 import { contracts, getContractByNetworkId } from "../constants/contracts";
-import { getQuote, sendTransaction, getTokenConnections } from "@/lib/transactions";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import {
+  getQuote,
+  sendTransaction,
+  getTokenConnections,
+} from "@/lib/transactions";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ethers } from "ethers";
 
 async function fetchPartnerLogos() {
   const response = await fetch("/api/partnerLogos");
@@ -32,7 +37,9 @@ async function fetchPartnerLogos() {
 
 export default function Main() {
   const [partnerLogos, setPartnerLogos] = useState<string[]>([]);
-  const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
+  const [messages, setMessages] = useState<{ role: string; content: string }[]>(
+    []
+  );
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -46,6 +53,13 @@ export default function Main() {
   const [toChain, setToChain] = useState("");
   const [fromToken, setFromToken] = useState("");
   const [toToken, setToToken] = useState("");
+  const [showTransferPopup, setShowTransferPopup] = useState(false);
+  const [transferAmount, setTransferAmount] = useState("");
+  const [transferToAddress, setTransferToAddress] = useState("");
+  const [transferFromToken, setTransferFromToken] = useState("");
+  const [transferToToken, setTransferToToken] = useState("");
+  const [transferFromChain, setTransferFromChain] = useState("");
+  const [transferToChain, setTransferToChain] = useState("");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -77,26 +91,68 @@ export default function Main() {
   }
 
   const navItems = [
-    { name: "My Account", icon: () => <img src="/assets/profiles/noun.png" alt="Noun" className={styles.icon_size + " rounded-full"} />, href: "/account" },
-    { name: "My Contacts", icon: () => <img src="/assets/3-heads/head-cordlessphone.svg" alt="Cordless Phone" className={styles.icon_size} style={{ transform: 'rotate(90deg)' }} />, href: "/contacts" },
-    { name: "My Messages", icon: () => <img src="/assets/3-heads/head-mailbox.svg" alt="Mailbox" className={styles.icon_size} />, href: "/messages" },
-    { name: "Notifications", icon: () => <img src="/assets/3-heads/head-bell.svg" alt="Bell" className={styles.icon_size} />, href: "/notifications" },
+    {
+      name: "My Account",
+      icon: () => (
+        <img
+          src="/assets/profiles/noun.png"
+          alt="Noun"
+          className={styles.icon_size + " rounded-full"}
+        />
+      ),
+      href: "/account",
+    },
+    {
+      name: "My Contacts",
+      icon: () => (
+        <img
+          src="/assets/3-heads/head-cordlessphone.svg"
+          alt="Cordless Phone"
+          className={styles.icon_size}
+          style={{ transform: "rotate(90deg)" }}
+        />
+      ),
+      href: "/contacts",
+    },
+    {
+      name: "My Messages",
+      icon: () => (
+        <img
+          src="/assets/3-heads/head-mailbox.svg"
+          alt="Mailbox"
+          className={styles.icon_size}
+        />
+      ),
+      href: "/messages",
+    },
+    {
+      name: "Notifications",
+      icon: () => (
+        <img
+          src="/assets/3-heads/head-bell.svg"
+          alt="Bell"
+          className={styles.icon_size}
+        />
+      ),
+      href: "/notifications",
+    },
   ];
 
   const handleTransaction = async (response: any) => {
     if (!primaryWallet) {
-      console.error("No wallet connected");
+      toast.error("No wallet connected");
       return;
     }
 
     try {
       if (primaryWallet && isEthereumWallet(primaryWallet) && network) {
+        toast.info("Initializing transaction...");
         const client = await primaryWallet.getWalletClient(network.toString());
         const publicClient = await primaryWallet.getPublicClient();
-        console.log("response: ", response);
+        
         switch (response.type) {
           case "link_create":
-            console.log("Creating link");
+            toast.info("Checking balance...");
             const balance = await publicClient.readContract({
               address: getContractByNetworkId(Number(network)).usdc,
               abi: usdcContractAbi,
@@ -104,13 +160,12 @@ export default function Main() {
               args: [primaryWallet.address],
             });
 
-            console.log("balance: ", balance);
-
             if (Number(balance) < response.amount) {
-              console.log("Insufficient balance: ", balance, response.amount);
+              toast.error("Insufficient balance");
               return;
             }
 
+            toast.info("Checking allowance...");
             const approveAmount = await publicClient.readContract({
               address: getContractByNetworkId(Number(network)).usdc,
               abi: usdcContractAbi,
@@ -122,6 +177,7 @@ export default function Main() {
             });
 
             if (Number(approveAmount) < response.amount) {
+              toast.info("Approving USDC...");
               const approveTx = await client.writeContract({
                 address: getContractByNetworkId(Number(network)).usdc,
                 abi: usdcContractAbi,
@@ -133,32 +189,36 @@ export default function Main() {
                   ),
                 ],
               });
+              toast.info("Waiting for approval confirmation...");
               await publicClient.waitForTransactionReceipt({ hash: approveTx });
             }
 
+            toast.info("Creating link...");
             await client.writeContract({
               address: getContractByNetworkId(Number(network)).redeemableLink,
               abi: redeemableLinkAbi,
               functionName: "createLink",
-              args: [response.linkId, BigInt(response.amount)]
+              args: [response.linkId, BigInt(response.amount)],
             });
             break;
 
           case "link_redeem":
-            console.log("Redeeming link: ", response);
+            toast.info("Initiating redeem...");
             const redeemed = await client.writeContract({
               address: getContractByNetworkId(network).redeemableLink,
               abi: redeemableLinkAbi,
               functionName: "redeem",
               args: [response.linkId],
             });
-            const receipt = await publicClient.waitForTransactionReceipt({ hash: redeemed });
-            console.log("Redeemed: ", receipt);
+            toast.info("Waiting for redeem confirmation...");
+            const receipt = await publicClient.waitForTransactionReceipt({
+              hash: redeemed,
+            });
             break;
 
           case "transfer":
             if (response.network) {
-              console.log("Getting quote");
+              toast.info("Getting quote...");
               const quote = await getQuote(
                 response.network.fromChain,
                 response.network.toChain,
@@ -168,27 +228,27 @@ export default function Main() {
                 response.toAddress,
                 primaryWallet.address
               );
+              
+              toast.info("Checking approval...");
               await ensureUSDCApproval(
                 primaryWallet,
                 network,
                 response.amount.toString()
               );
+              
+              toast.info("Sending transaction...");
               const transactionReceipt = await sendTransaction(
                 primaryWallet,
                 response.toAddress,
                 response.amount.toString(),
                 quote.transactionRequest
               );
-
-              console.log("transactionReceipt", transactionReceipt);
+              toast.info("Waiting for confirmation...");
             }
             break;
 
-          case "swap":
-            console.log("Swap transaction: ", response);
-            break;
-        
           case "connections":
+            toast.info("Fetching token connections...");
             const connections = await getTokenConnections(
               response.fromChain || undefined,
               response.toChain || undefined,
@@ -196,27 +256,29 @@ export default function Main() {
               response.toToken || undefined
             );
             // Create a Blob and URL for the connections data
-            const blob = new Blob([JSON.stringify(connections, null, 2)], { type: 'application/json' });
+            const blob = new Blob([JSON.stringify(connections, null, 2)], {
+              type: "application/json",
+            });
             const url = URL.createObjectURL(blob);
             // Add the URL to the messages
             setMessages((prev) => [
               ...prev,
-              { 
-                role: "assistant", 
-                content: `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">Click here to view connections data</a>` 
+              {
+                role: "assistant",
+                content: `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">Click here to view connections data</a>`,
               },
             ]);
             return;
         }
-        toast.success("Transaction processed successfully.");
+        toast.success("Transaction completed successfully!");
         return;
       } else {
-        console.error("Not supported");
+        toast.error("Wallet not supported");
         return;
       }
     } catch (error) {
       console.error("Transaction failed:", error);
-      toast.error("Transaction failed.");
+      toast.error(`Transaction N: ${error.message || 'Unknown error'}`);
     }
   };
 
@@ -267,6 +329,7 @@ export default function Main() {
     tokenAmount: any
   ) {
     if (primaryWallet && isEthereumWallet(primaryWallet) && network) {
+      toast.info("Checking approval...");
       const client = await primaryWallet.getWalletClient(network.toString());
       const publicClient = await primaryWallet.getPublicClient();
 
@@ -281,6 +344,7 @@ export default function Main() {
       });
 
       if (Number(approveAmount) < tokenAmount) {
+        toast.info("Approving USDC spend...");
         const approveTx = await client.writeContract({
           address: getContractByNetworkId(Number(network)).usdc,
           abi: usdcContractAbi,
@@ -295,8 +359,7 @@ export default function Main() {
         await publicClient.waitForTransactionReceipt({
           hash: approveTx,
         });
-
-        console.log("Approval successful: ", approveTx);
+        toast.success("Approval confirmed!");
       }
     }
   }
@@ -352,7 +415,7 @@ export default function Main() {
         fromChain: fromChain || undefined,
         toChain: toChain || undefined,
         fromToken: fromToken || undefined,
-        toToken: toToken || undefined
+        toToken: toToken || undefined,
       };
       await handleTransaction(response);
       setShowConnectionsPopup(false);
@@ -367,9 +430,60 @@ export default function Main() {
     }
   };
 
+  const handleTransferAction = () => {
+    setShowTransferPopup(true);
+  };
+
+  const handleTransferSubmit = async () => {
+    if (!transferAmount || !transferToAddress) {
+      toast.error("Amount and recipient address are required");
+      return;
+    }
+
+    try {
+      const response = {
+        type: "transfer",
+        amount: ethers.parseEther(transferAmount.toString()),
+        toAddress: transferToAddress,
+        network: {
+          fromChain: transferFromChain,
+          toChain: transferToChain,
+        },
+        token: {
+          fromToken: transferFromToken,
+          toToken: transferToToken,
+        }
+      };
+      console.log("response: ", response);
+      await handleTransaction(response);
+      setShowTransferPopup(false);
+      // Reset form
+      setTransferAmount("");
+      setTransferToAddress("");
+      setTransferFromChain("");
+      setTransferToChain("");
+      setTransferFromToken("");
+      setTransferToToken("");
+    } catch (error) {
+      console.error("Transfer failed:", error);
+      toast.error("Transfer failed. No quote found or use higher token amount.");
+    }
+  };
+
   return (
     <div className={`flex h-screen bg-gray-50 ${isDarkMode ? "dark" : ""}`}>
-      <ToastContainer />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme={isDarkMode ? "dark" : "light"}
+      />
       {/* Sidebar */}
       <motion.div
         initial={{ x: -300, opacity: 0 }}
@@ -400,7 +514,7 @@ export default function Main() {
             Jiggly
           </motion.h1>
         </motion.div>
-        <nav className="space-y-2">
+        {/* <nav className="space-y-2">
           {navItems.map((item) => (
             <Link key={item.name} href={item.href}>
               <motion.div
@@ -417,9 +531,9 @@ export default function Main() {
               </motion.div>
             </Link>
           ))}
-        </nav>
+        </nav> */}
 
-        {/* Partner Logos Section */}
+        {/*  // Partner Logos Section
         <div className={styles.partnerLogos}>
           <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
             Our Partners
@@ -430,7 +544,7 @@ export default function Main() {
             animate={{ y: "0%" }}
             transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
           >
-            {/* <div className={styles.partnerLogosContainer}>
+            <div className={styles.partnerLogosContainer}>
               {partnerLogos.map((logo, index) => (
                 <img
                   key={index}
@@ -439,9 +553,9 @@ export default function Main() {
                   className={styles.partnerLogoImage}
                 />
               ))}
-            </div> */}
+            </div>
           </motion.div>
-        </div>
+        </div> */}
 
         {/* Quick Actions Section */}
         <div className="mt-6">
@@ -456,6 +570,9 @@ export default function Main() {
           </Button>
           <Button onClick={handleConnectionsAction} className="w-full mb-2">
             View Connections
+          </Button>
+          <Button onClick={handleTransferAction} className="w-full mb-2">
+            Transfer Tokens (Only Mainnet)
           </Button>
         </div>
 
@@ -482,9 +599,7 @@ export default function Main() {
                 </label>
                 <select
                   value={selectedNetworkId}
-                  onChange={(e) =>
-                    setSelectedNetworkId(Number(e.target.value))
-                  }
+                  onChange={(e) => setSelectedNetworkId(Number(e.target.value))}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
                 >
                   {Object.entries(contracts).map(([networkId, contract]) => {
@@ -494,11 +609,12 @@ export default function Main() {
                       "314159": "Filecoin Calibration Testnet",
                       "80002": "Polygon Amoy",
                       "296": "Hedera Testnet",
-                      "137": "Polygon Mainnet"
+                      "137": "Polygon Mainnet",
                     };
                     return (
                       <option key={networkId} value={networkId}>
-                        {networkNames[networkId as keyof typeof networkNames] || `Network ID: ${networkId}`}
+                        {networkNames[networkId as keyof typeof networkNames] ||
+                          `Network ID: ${networkId}`}
                       </option>
                     );
                   })}
@@ -545,11 +661,12 @@ export default function Main() {
                       "314159": "Filecoin Calibration Testnet",
                       "80002": "Polygon Amoy",
                       "296": "Hedera Testnet",
-                      "137": "Polygon Mainnet"
+                      "137": "Polygon Mainnet",
                     };
                     return (
                       <option key={networkId} value={networkId}>
-                        {networkNames[networkId as keyof typeof networkNames] || `Network ID: ${networkId}`}
+                        {networkNames[networkId as keyof typeof networkNames] ||
+                          `Network ID: ${networkId}`}
                       </option>
                     );
                   })}
@@ -567,7 +684,7 @@ export default function Main() {
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
             <div className="bg-white p-4 rounded shadow-lg w-96">
               <h3 className="text-lg font-bold mb-4">View Token Connections</h3>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -581,13 +698,19 @@ export default function Main() {
                     <option value="">Select Chain</option>
                     {Object.entries(contracts).map(([networkId]) => (
                       <option key={networkId} value={networkId}>
-                        {networkId === "11155111" ? "Ethereum Sepolia" :
-                         networkId === "1301" ? "Unichain Testnet" :
-                         networkId === "314159" ? "Filecoin Calibration" :
-                         networkId === "80002" ? "Polygon Amoy" :
-                         networkId === "296" ? "Hedera Testnet" :
-                         networkId === "137" ? "Polygon Mainnet" :
-                         `Network ${networkId}`}
+                        {networkId === "1"
+                          ? "Ethereum Mainnet"
+                          : networkId === "1301"
+                          ? "Unichain Testnet"
+                          : networkId === "314"
+                          ? "Filecoin Mainnet"
+                          : networkId === "137"
+                          ? "Polygon Mainnet"
+                          : networkId === "295"
+                          ? "Hedera Mainnet"
+                          : networkId === "56"
+                          ? "Binance Smart Chain Mainnet"
+                          : `Network ${networkId}`}
                       </option>
                     ))}
                   </select>
@@ -605,13 +728,19 @@ export default function Main() {
                     <option value="">Select Chain</option>
                     {Object.entries(contracts).map(([networkId]) => (
                       <option key={networkId} value={networkId}>
-                        {networkId === "11155111" ? "Ethereum Sepolia" :
-                         networkId === "1301" ? "Unichain Testnet" :
-                         networkId === "314159" ? "Filecoin Calibration" :
-                         networkId === "80002" ? "Polygon Amoy" :
-                         networkId === "296" ? "Hedera Testnet" :
-                         networkId === "137" ? "Polygon Mainnet" :
-                         `Network ${networkId}`}
+                        {networkId === "11155111"
+                          ? "Ethereum Sepolia"
+                          : networkId === "1301"
+                          ? "Unichain Testnet"
+                          : networkId === "314159"
+                          ? "Filecoin Calibration"
+                          : networkId === "80002"
+                          ? "Polygon Amoy"
+                          : networkId === "296"
+                          ? "Hedera Testnet"
+                          : networkId === "137"
+                          ? "Polygon Mainnet"
+                          : `Network ${networkId}`}
                       </option>
                     ))}
                   </select>
@@ -625,7 +754,7 @@ export default function Main() {
                     type="text"
                     value={fromToken}
                     onChange={(e) => setFromToken(e.target.value)}
-                    placeholder="Token address"
+                    placeholder="Token (Eg: USDC)"
                     className="w-full border border-gray-300 rounded-md shadow-sm p-2"
                   />
                 </div>
@@ -638,7 +767,7 @@ export default function Main() {
                     type="text"
                     value={toToken}
                     onChange={(e) => setToToken(e.target.value)}
-                    placeholder="Token address"
+                    placeholder="Token (Eg: ETH)"
                     className="w-full border border-gray-300 rounded-md shadow-sm p-2"
                   />
                 </div>
@@ -648,6 +777,129 @@ export default function Main() {
                     View Connections
                   </Button>
                   <Button onClick={() => setShowConnectionsPopup(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showTransferPopup && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white p-4 rounded shadow-lg w-96">
+              <h3 className="text-lg font-bold mb-4">Transfer Tokens</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Amount*
+                  </label>
+                  <input
+                    type="text"
+                    value={transferAmount}
+                    onChange={(e) => setTransferAmount(e.target.value)}
+                    placeholder="Enter amount"
+                    className="w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Recipient Address*
+                  </label>
+                  <input
+                    type="text"
+                    value={transferToAddress}
+                    onChange={(e) => setTransferToAddress(e.target.value)}
+                    placeholder="0x..."
+                    className="w-full border border-gray-300 rounded-md shadow-sm p-2"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    From Chain
+                  </label>
+                  <select
+                    value={transferFromChain}
+                    onChange={(e) => setTransferFromChain(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md shadow-sm p-2"
+                  >
+                    <option value="">Select Source Chain</option>
+                    {Object.entries(contracts).map(([networkId]) => (
+                      <option key={networkId} value={networkId}>
+                        {networkId === "11155111" ? "Ethereum Sepolia" :
+                         networkId === "1301" ? "Unichain Testnet" :
+                         networkId === "314159" ? "Filecoin Calibration" :
+                         networkId === "80002" ? "Polygon Amoy" :
+                         networkId === "296" ? "Hedera Testnet" :
+                         networkId === "137" ? "Polygon Mainnet" :
+                         networkId === "1" ? "Ethereum Mainnet" :
+                         `Network ${networkId}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    To Chain
+                  </label>
+                  <select
+                    value={transferToChain}
+                    onChange={(e) => setTransferToChain(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md shadow-sm p-2"
+                  >
+                    <option value="">Select Destination Chain</option>
+                    {Object.entries(contracts).map(([networkId]) => (
+                      <option key={networkId} value={networkId}>
+                        {networkId === "11155111" ? "Ethereum Sepolia" :
+                         networkId === "1301" ? "Unichain Testnet" :
+                         networkId === "314159" ? "Filecoin Calibration" :
+                         networkId === "80002" ? "Polygon Amoy" :
+                         networkId === "296" ? "Hedera Testnet" :
+                         networkId === "137" ? "Polygon Mainnet" :
+                         networkId === "1" ? "Ethereum Mainnet" :
+                         `Network ${networkId}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    From Token
+                  </label>
+                  <input
+                    type="text"
+                    value={transferFromToken}
+                    onChange={(e) => setTransferFromToken(e.target.value)}
+                    placeholder="Source token (e.g., USDC)"
+                    className="w-full border border-gray-300 rounded-md shadow-sm p-2"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    To Token
+                  </label>
+                  <input
+                    type="text"
+                    value={transferToToken}
+                    onChange={(e) => setTransferToToken(e.target.value)}
+                    placeholder="Destination token (e.g., ETH)"
+                    className="w-full border border-gray-300 rounded-md shadow-sm p-2"
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-2 mt-4">
+                  <Button onClick={handleTransferSubmit} className="mr-2">
+                    Transfer
+                  </Button>
+                  <Button onClick={() => setShowTransferPopup(false)}>
                     Cancel
                   </Button>
                 </div>
@@ -721,10 +973,18 @@ export default function Main() {
                         ease: "easeInOut",
                       }}
                     >
-                      <img src="/assets/3-heads/head-plane.svg" alt="Plane" className="h-8 w-8" />
+                      <img
+                        src="/assets/3-heads/head-plane.svg"
+                        alt="Plane"
+                        className="h-8 w-8"
+                      />
                     </motion.div>
                   ) : (
-                    <img src="/assets/3-heads/head-plane.svg" alt="Plane" className="h-8 w-8" />
+                    <img
+                      src="/assets/3-heads/head-plane.svg"
+                      alt="Plane"
+                      className="h-8 w-8"
+                    />
                   )}
                   <span className="sr-only">Send message</span>
                 </Button>
