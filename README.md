@@ -3,7 +3,7 @@
 **Live URL:** [https://jiggly.vercel.app/](https://jiggly.vercel.app/)
 
 ## Start Generation Here
-![Arc Diagram](@arch.png)
+![Arc Diagram](./public/assets/arch.png)
 ## End Generation Here
 
 This is an AI-powered blockchain transaction assistant that enables seamless cross-chain operations through natural language processing. The application understands user intent and facilitates:
