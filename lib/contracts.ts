@@ -61,30 +61,6 @@ const ERC20_ABI = [
   },
 ];
 
-// Get the current allowance and update it if needed
-export const checkAndSetAllowance = async (
-  wallet: any,
-  tokenAddress: string,
-  approvalAddress: string,
-  amount: string
-) => {
-  // Transactions with the native token don't need approval
-  if (tokenAddress === ethers.ZeroAddress) {
-    return;
-  }
-
-  const erc20 = new Contract(tokenAddress, ERC20_ABI, wallet);
-  const allowance = await erc20.allowance(
-    await wallet.getAddress(),
-    approvalAddress
-  );
-
-  if (allowance.lt(amount)) {
-    const approveTx = await erc20.approve(approvalAddress, amount);
-    await approveTx.wait();
-  }
-};
-
 export async function createRedeemableLink(
   primaryWallet: any,
   amount: number,
@@ -95,12 +71,12 @@ export async function createRedeemableLink(
     const publicClient = await primaryWallet.getPublicClient();
     console.log("Creating link: ", publicClient);
     const created = await publicClient.readContract({
-      address: getContractByNetworkId(network).redeemableLink,
+      address: "0x38ecb7Aff1f657c7E84B2cFe23F6596Ce41E0aac", //getContractByNetworkId(network).redeemableLink,
       abi: redeemableLinkAbi,
       functionName: "createLink",
-      args: [linkId.toString(), ethers.parseEther("1")],
+      args: ["12324", BigInt(amount)]
     });
-    console.log("Created link: ", created, linkId.toString(), ethers.parseEther("1"));
+    console.log("Created link: ", created, linkId.toString(), BigInt(amount));
     return created;
   }
   return null;

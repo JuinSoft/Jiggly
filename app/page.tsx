@@ -17,7 +17,7 @@ import { createRedeemableLink, redeemLink } from "@/lib/contracts";
 import { getWeb3Provider, getSigner } from "@dynamic-labs/ethers-v6";
 import { isEthereumWallet } from "@dynamic-labs/ethereum";
 import { getContractByNetworkId } from "../constants/contracts";
-import { usdcContractAbi } from "../constants/abi";
+import { usdcContractAbi, redeemableLinkAbi } from "../constants/abi";
 import { parseGwei } from "viem";
 import styles from "./page.module.css";
 
@@ -116,8 +116,6 @@ export default function Main() {
               ],
             });
 
-            console.log("approveAmount: ", approveAmount, response.amount);
-
             if (Number(approveAmount) < response.amount) {
               const approveTx = await client.writeContract({
                 address: getContractByNetworkId(Number(network)).usdc,
@@ -133,12 +131,13 @@ export default function Main() {
               await publicClient.waitForTransactionReceipt({ hash: approveTx });
             }
 
-            await createRedeemableLink(
-              primaryWallet,
-              response.amount,
-              response.linkId,
-              Number(network)
-            );
+            const client = await primaryWallet.getWalletClient(network.toString());
+            const createLink = await client.writeContract({
+              address: getContractByNetworkId(Number(network)).redeemableLink,
+              abi: redeemableLinkAbi,
+              functionName: "createLink",
+              args: [response.linkId, BigInt(response.amount)]
+            });
             break;
 
           case "transfer":
