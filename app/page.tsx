@@ -72,10 +72,10 @@ export default function Main() {
   }
 
   const navItems = [
-    { name: "My Account", icon: User, href: "/account" },
-    { name: "My Contacts", icon: Home, href: "/contacts" },
-    { name: "My Messages", icon: MessageSquare, href: "/messages" },
-    { name: "Notifications", icon: Bell, href: "/notifications" },
+    { name: "My Account", icon: () => <img src="/assets/profiles/noun.png" alt="Noun" className={styles.icon_size + " rounded-full"} />, href: "/account" },
+    { name: "My Contacts", icon: () => <img src="/assets/3-heads/head-cordlessphone.svg" alt="Cordless Phone" className={styles.icon_size} style={{ transform: 'rotate(90deg)' }} />, href: "/contacts" },
+    { name: "My Messages", icon: () => <img src="/assets/3-heads/head-mailbox.svg" alt="Mailbox" className={styles.icon_size} />, href: "/messages" },
+    { name: "Notifications", icon: () => <img src="/assets/3-heads/head-bell.svg" alt="Bell" className={styles.icon_size} />, href: "/notifications" },
   ];
 
   const handleTransaction = async (response: any) => {    
@@ -253,17 +253,31 @@ export default function Main() {
         animate={{ x: 0, opacity: 1 }}
         className="w-64 bg-white p-4 shadow-lg dark:bg-gray-800"
       >
-        <motion.h1
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className={`mb-6 text-2xl font-bold ${
-            pathname === "/account"
-              ? "bg-gray-100 text-gray-900"
-              : "text-gray-600 hover:text-gray-900"
-          }`}
+          className="flex items-center mb-6"
         >
-          Jiggly
-        </motion.h1>
+          {/* <img src="/assets/3-heads/head-jellyfish.svg" alt="App Logo" className="h-8 w-8 mr-2" /> */}
+          <motion.img
+            src="/assets/3-heads/head-jellyfish.svg"
+            alt="Jiggly Logo"
+            className="h-8 w-8 mr-2"
+            animate={{ rotate: [0, 10, -10, 0] }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+          />
+          <motion.h1
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className={`text-2xl font-bold ${
+              pathname === "/account"
+                ? "bg-gray-100 text-gray-900"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            Jiggly
+          </motion.h1>
+        </motion.div>
         <nav className="space-y-2">
           {navItems.map((item) => (
             <Link key={item.name} href={item.href}>
@@ -276,7 +290,7 @@ export default function Main() {
                     : "text-gray-600 hover:text-gray-900"
                 }`}
               >
-                <item.icon className="h-4 w-4" />
+                <item.icon />
                 {item.name}
               </motion.div>
             </Link>
@@ -292,7 +306,7 @@ export default function Main() {
             animate={{ y: "0%" }}
             transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
           >
-            <div className={styles.partnerLogosContainer}>
+            {/* <div className={styles.partnerLogosContainer}>
               {partnerLogos.map((logo, index) => (
                 <img
                   key={index}
@@ -301,7 +315,7 @@ export default function Main() {
                   className={styles.partnerLogoImage}
                 />
               ))}
-            </div>
+            </div> */}
           </motion.div>
         </div>
       </motion.div>
@@ -364,17 +378,17 @@ export default function Main() {
                 <Button type="submit" disabled={isLoading}>
                   {isLoading ? (
                     <motion.div
-                      animate={{ rotate: 360 }}
+                      animate={{ y: [0, -10, 0] }}
                       transition={{
                         duration: 1,
                         repeat: Infinity,
-                        ease: "linear",
+                        ease: "easeInOut",
                       }}
                     >
-                      <Mail className="h-4 w-4" />
+                      <img src="/assets/3-heads/head-plane.svg" alt="Plane" className="h-8 w-8" />
                     </motion.div>
                   ) : (
-                    <Send className="h-4 w-4" />
+                    <img src="/assets/3-heads/head-plane.svg" alt="Plane" className="h-8 w-8" />
                   )}
                   <span className="sr-only">Send message</span>
                 </Button>

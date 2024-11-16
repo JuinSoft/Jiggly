@@ -170,10 +170,9 @@ a.secondary {
 .partnerLogos {
   margin-top: 20px;
   padding: 16px;
-  background-color: #fff;
   position: relative;
   z-index: 1;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 .partnerLogosContainer {
@@ -182,11 +181,36 @@ a.secondary {
   gap: 16px;
   justify-items: center;
   width: 100%;
-  overflow: hidden;
+  /* flex-grow: 1; */
+  /* overflow: hidden;
+   */
 }
 
 .partnerLogoImage {
   /* width: 64px; */
   /* height: 64px; */
   object-fit: cover;
+}
+
+.icon_size {
+  width: 24px;
+  height: 24px;
+}
+
+@media (max-width: 768px) {
+  .icon_size {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .icon_size {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.icon_round {
+  border-radius: 50%;
 }
