@@ -65,8 +65,8 @@ const contracts = {
 
     // Unichain V4 Testnet
     1301: {
-        redeemableLink: "", // Not supported yet
-        usdc: "",
+        redeemableLink: "0x2418c9Ff4494b37227b5c525601A64F8c58c4152",
+        usdc: "0x71A7dac14d9FdE4396A800209c29d2Af2Ff6E6d7",
         rpc: "https://sepolia.unichain.org",
         explorer: explorers[1301].explorers[0].url
     },

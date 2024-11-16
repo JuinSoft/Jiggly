@@ -84,6 +84,10 @@ The assistant uses OpenAI to parse natural language requests and execute the app
   USDC: `0xBb95A888B4EBF96f8A7279Ea7A49A69cd4b12Ac9`  
   Redeemable Link: `0xe468b64D4c59AA00C0287e29FFdbA006E0F4468b`
 
+- **Unichain V4**
+  USDC: `0x2418c9Ff4494b37227b5c525601A64F8c58c4152`  
+  Redeemable Link: `0x71A7dac14d9FdE4396A800209c29d2Af2Ff6E6d7`
+
 ### Usage Examples
 > There might be processing issues; we have added quick actions to make it easier to use.
 
