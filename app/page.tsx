@@ -18,7 +18,7 @@ import { usdcContractAbi, redeemableLinkAbi } from "../constants/abi";
 import { parseGwei } from "viem";
 import styles from "./page.module.css";
 import { contracts, getContractByNetworkId } from "../constants/contracts";
-import { getQuote, sendTransaction } from "@/lib/transactions";
+import { getQuote, sendTransaction, getTokenConnections } from "@/lib/transactions";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -41,6 +41,11 @@ export default function Main() {
   const [selectedNetworkId, setSelectedNetworkId] = useState(11155111); // Default to Ethereum Sepolia
   const [redeemId, setRedeemId] = useState("");
   const [showRedeemPopup, setShowRedeemPopup] = useState(false);
+  const [showConnectionsPopup, setShowConnectionsPopup] = useState(false);
+  const [fromChain, setFromChain] = useState("");
+  const [toChain, setToChain] = useState("");
+  const [fromToken, setFromToken] = useState("");
+  const [toToken, setToToken] = useState("");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -182,6 +187,26 @@ export default function Main() {
           case "swap":
             console.log("Swap transaction: ", response);
             break;
+        
+          case "connections":
+            const connections = await getTokenConnections(
+              response.fromChain || undefined,
+              response.toChain || undefined,
+              response.fromToken || undefined,
+              response.toToken || undefined
+            );
+            // Create a Blob and URL for the connections data
+            const blob = new Blob([JSON.stringify(connections, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            // Add the URL to the messages
+            setMessages((prev) => [
+              ...prev,
+              { 
+                role: "assistant", 
+                content: `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">Click here to view connections data</a>` 
+              },
+            ]);
+            return;
         }
         toast.success("Transaction processed successfully.");
         return;
@@ -234,12 +259,6 @@ export default function Main() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handlePredefinedMessage = (message: string) => {
-    setInput(message);
-    // Optionally, you can submit the form automatically
-    // handleSubmit(new Event('submit'));
   };
 
   async function ensureUSDCApproval(
@@ -319,6 +338,32 @@ export default function Main() {
       toast.error("Redeem failed.");
     } finally {
       setShowRedeemPopup(false);
+    }
+  };
+
+  const handleConnectionsAction = () => {
+    setShowConnectionsPopup(true);
+  };
+
+  const handleConnectionsSubmit = async () => {
+    try {
+      const response = {
+        type: "connections",
+        fromChain: fromChain || undefined,
+        toChain: toChain || undefined,
+        fromToken: fromToken || undefined,
+        toToken: toToken || undefined
+      };
+      await handleTransaction(response);
+      setShowConnectionsPopup(false);
+      // Reset form
+      setFromChain("");
+      setToChain("");
+      setFromToken("");
+      setToToken("");
+    } catch (error) {
+      console.error("Connections request failed:", error);
+      toast.error("Failed to fetch connections.");
     }
   };
 
@@ -408,6 +453,9 @@ export default function Main() {
           </Button>
           <Button onClick={handleRedeemAction} className="w-full mb-2">
             Redeem Token
+          </Button>
+          <Button onClick={handleConnectionsAction} className="w-full mb-2">
+            View Connections
           </Button>
         </div>
 
@@ -514,6 +562,99 @@ export default function Main() {
             </div>
           </div>
         )}
+
+        {showConnectionsPopup && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white p-4 rounded shadow-lg w-96">
+              <h3 className="text-lg font-bold mb-4">View Token Connections</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    From Chain (optional)
+                  </label>
+                  <select
+                    value={fromChain}
+                    onChange={(e) => setFromChain(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md shadow-sm p-2"
+                  >
+                    <option value="">Select Chain</option>
+                    {Object.entries(contracts).map(([networkId]) => (
+                      <option key={networkId} value={networkId}>
+                        {networkId === "11155111" ? "Ethereum Sepolia" :
+                         networkId === "1301" ? "Unichain Testnet" :
+                         networkId === "314159" ? "Filecoin Calibration" :
+                         networkId === "80002" ? "Polygon Amoy" :
+                         networkId === "296" ? "Hedera Testnet" :
+                         networkId === "137" ? "Polygon Mainnet" :
+                         `Network ${networkId}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    To Chain (optional)
+                  </label>
+                  <select
+                    value={toChain}
+                    onChange={(e) => setToChain(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md shadow-sm p-2"
+                  >
+                    <option value="">Select Chain</option>
+                    {Object.entries(contracts).map(([networkId]) => (
+                      <option key={networkId} value={networkId}>
+                        {networkId === "11155111" ? "Ethereum Sepolia" :
+                         networkId === "1301" ? "Unichain Testnet" :
+                         networkId === "314159" ? "Filecoin Calibration" :
+                         networkId === "80002" ? "Polygon Amoy" :
+                         networkId === "296" ? "Hedera Testnet" :
+                         networkId === "137" ? "Polygon Mainnet" :
+                         `Network ${networkId}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    From Token (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={fromToken}
+                    onChange={(e) => setFromToken(e.target.value)}
+                    placeholder="Token address"
+                    className="w-full border border-gray-300 rounded-md shadow-sm p-2"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    To Token (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={toToken}
+                    onChange={(e) => setToToken(e.target.value)}
+                    placeholder="Token address"
+                    className="w-full border border-gray-300 rounded-md shadow-sm p-2"
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-2 mt-4">
+                  <Button onClick={handleConnectionsSubmit} className="mr-2">
+                    View Connections
+                  </Button>
+                  <Button onClick={() => setShowConnectionsPopup(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </motion.div>
 
       {/* Main Content */}
@@ -550,9 +691,8 @@ export default function Main() {
                           ? "bg-blue-500 text-white"
                           : "bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-white"
                       }`}
-                    >
-                      {message.content}
-                    </div>
+                      dangerouslySetInnerHTML={{ __html: message.content }}
+                    />
                   </motion.div>
                 ))}
               </AnimatePresence>

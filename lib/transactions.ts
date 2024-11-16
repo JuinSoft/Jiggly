@@ -57,4 +57,28 @@ const sendTransaction = async (
   return receipt;
 };
 
-export { getQuote, sendTransaction };
+const getTokenConnections = async (
+  fromChain?: string,
+  toChain?: string,
+  fromToken?: string,
+  toToken?: string
+) => {
+  try {
+    const params: Record<string, string> = {};
+    if (fromChain) params.fromChain = fromChain;
+    if (toChain) params.toChain = toChain;
+    if (fromToken) params.fromToken = fromToken;
+    if (toToken) params.toToken = toToken;
+
+    const response = await axios.get(process.env.TOKEN_CONNECTION_API as string, {
+      params
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching token connections:", error);
+    throw error;
+  }
+};
+
+export { getQuote, sendTransaction, getTokenConnections };

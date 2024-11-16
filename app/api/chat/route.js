@@ -53,9 +53,13 @@ export async function POST(request) {
       console.log("Swap transaction: ", parsedResponse);
       return NextResponse.json(parsedResponse);
     }
-  
+
     // Handle clarification requests
     if (parsedResponse.type === 'clarification') {
+      return NextResponse.json(parsedResponse);
+    }
+
+    if (parsedResponse.type === 'connections') {
       return NextResponse.json(parsedResponse);
     }
 
@@ -72,7 +76,7 @@ export async function POST(request) {
         // No additional processing needed for redemption
         break;
 
-        default:
+      default:
         // Handle unknown type
         return NextResponse.json({
           type: 'unknown',

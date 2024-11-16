@@ -41,6 +41,15 @@ Required fields:
 - amount: number (in wei)
 - toAddress: string (for transfers)
 
+
+5. TOKEN CONNECTIONS
+Required fields (at least one):
+- type: "connections"
+- fromChain: string (optional)
+- toChain: string (optional)
+- fromToken: string (optional)
+- toToken: string (optional)
+
 If ANY required information is missing, respond with:
 {
   "type": "clarification",
@@ -77,7 +86,9 @@ For link operations:
 - Link IDs must be provided for redemption
 - Amount must be converted to wei
 
-For transfer or swap operations, if any required fields are missing, provide an example format for the user to follow.`;
+For transfer or swap operations, if any required fields are missing, provide an example format for the user to follow.
+For connections, only one of the fields is required. You can skip clarification for this type.
+`;
 
 
 /*
