@@ -36,7 +36,12 @@ The assistant uses OpenAI to parse natural language requests and execute the app
    - Source token
    - Destination token
 
-### Supported Networks & Contracts
+### Supported Explorers, Networks & Contracts
+
+**Explorer**
+- Most of the supported networks explorer is used from Blockscout: ![Blockscout](./constants/explorers.json)
+- Contracts with explorers: ![Contracts](./constants/contracts.js)
+
 **Mainnet Networks**
 - **Ethereum Mainnet**  
   USDC: `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`  
