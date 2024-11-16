@@ -14,10 +14,13 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import axios from "axios";
 import { isEthereumWallet } from "@dynamic-labs/ethereum";
-import { getContractByNetworkId } from "../constants/contracts";
 import { usdcContractAbi, redeemableLinkAbi } from "../constants/abi";
 import { parseGwei } from "viem";
 import styles from "./page.module.css";
+import { contracts, getContractByNetworkId } from "../constants/contracts";
+import { getQuote, sendTransaction } from "@/lib/transactions";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 async function fetchPartnerLogos() {
   const response = await fetch("/api/partnerLogos");
@@ -26,41 +29,40 @@ async function fetchPartnerLogos() {
   }
   return response.json();
 }
-import { getQuote, sendTransaction } from "@/lib/transactions";
 
 export default function Main() {
   const [partnerLogos, setPartnerLogos] = useState<string[]>([]);
-
-  useEffect(() => {
-    fetchPartnerLogos()
-      .then(setPartnerLogos)
-      .catch((error) => console.error(error));
-  }, []);
-
-  // State hooks
-  const [messages, setMessages] = useState<{ role: string; content: string }[]>(
-    []
-  );
+  const [messages, setMessages] = useState<{ role: string; content: string }[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [ethAmount, setEthAmount] = useState("");
+  const [selectedNetworkId, setSelectedNetworkId] = useState(11155111); // Default to Ethereum Sepolia
+  const [redeemId, setRedeemId] = useState("");
+  const [showRedeemPopup, setShowRedeemPopup] = useState(false);
 
-  // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Context and router hooks
   const pathname = usePathname();
   const { user, primaryWallet, network } = useDynamicContext();
   const router = useRouter();
 
-  // Authentication effect
+  useEffect(() => {
+    fetchPartnerLogos()
+      .then(setPartnerLogos)
+      .catch((error) => {
+        console.error(error);
+        toast.error("Failed to load partner logos");
+      });
+  }, []);
+
   useEffect(() => {
     if (!user) {
       router.push("/login");
     }
   }, [user, router]);
 
-  // Scroll effect
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -181,6 +183,7 @@ export default function Main() {
             console.log("Swap transaction: ", response);
             break;
         }
+        toast.success("Transaction processed successfully.");
         return;
       } else {
         console.error("Not supported");
@@ -188,6 +191,7 @@ export default function Main() {
       }
     } catch (error) {
       console.error("Transaction failed:", error);
+      toast.error("Transaction failed.");
     }
   };
 
@@ -223,18 +227,19 @@ export default function Main() {
         ...prev,
         { role: "assistant", content: assistantMessage },
       ]);
+      toast.success("Message sent successfully.");
     } catch (error) {
       console.error("Error fetching chat response:", error);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "Sorry, I couldn't process your request.",
-        },
-      ]);
+      toast.error("Failed to send message.");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handlePredefinedMessage = (message: string) => {
+    setInput(message);
+    // Optionally, you can submit the form automatically
+    // handleSubmit(new Event('submit'));
   };
 
   async function ensureUSDCApproval(
@@ -277,8 +282,49 @@ export default function Main() {
     }
   }
 
+  const handleQuickAction = () => {
+    setShowPopup(true);
+  };
+
+  const handlePopupSubmit = () => {
+    const weiAmount = BigInt(parseFloat(ethAmount) * 1e18).toString();
+    const message = `Create ${weiAmount} wei USDC to chain id ${selectedNetworkId}`;
+    setInput(message);
+    setShowPopup(false);
+    // Optionally, submit the form automatically
+    // handleSubmit(new Event('submit'));
+  };
+
+  const handleRedeemAction = () => {
+    setShowRedeemPopup(true);
+  };
+
+  const handleRedeemSubmit = async () => {
+    if (!redeemId.trim()) {
+      console.error("Redeem ID is required");
+      return;
+    }
+
+    try {
+      const response = {
+        type: "link_redeem",
+        linkId: redeemId,
+        network: selectedNetworkId,
+      };
+      await handleTransaction(response);
+      console.log("Redeem successful");
+      toast.success("Redeem successful");
+    } catch (error) {
+      console.error("Redeem failed:", error);
+      toast.error("Redeem failed.");
+    } finally {
+      setShowRedeemPopup(false);
+    }
+  };
+
   return (
     <div className={`flex h-screen bg-gray-50 ${isDarkMode ? "dark" : ""}`}>
+      <ToastContainer />
       {/* Sidebar */}
       <motion.div
         initial={{ x: -300, opacity: 0 }}
@@ -290,7 +336,6 @@ export default function Main() {
           animate={{ opacity: 1 }}
           className="flex items-center mb-6"
         >
-          {/* <img src="/assets/3-heads/head-jellyfish.svg" alt="App Logo" className="h-8 w-8 mr-2" /> */}
           <motion.img
             src="/assets/3-heads/head-jellyfish.svg"
             alt="Jiggly Logo"
@@ -352,6 +397,123 @@ export default function Main() {
             </div> */}
           </motion.div>
         </div>
+
+        {/* Quick Actions Section */}
+        <div className="mt-6">
+          <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+            Quick Actions
+          </h2>
+          <Button onClick={handleQuickAction} className="w-full mb-2">
+            Create USDC
+          </Button>
+          <Button onClick={handleRedeemAction} className="w-full mb-2">
+            Redeem Token
+          </Button>
+        </div>
+
+        {/* Popup for Quick Action */}
+        {showPopup && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white p-4 rounded shadow-lg">
+              <h3 className="text-lg font-bold mb-2">Create USDC</h3>
+              <div className="mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Amount in ETH
+                </label>
+                <input
+                  type="number"
+                  value={ethAmount}
+                  onChange={(e) => setEthAmount(e.target.value)}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Select Network
+                </label>
+                <select
+                  value={selectedNetworkId}
+                  onChange={(e) =>
+                    setSelectedNetworkId(Number(e.target.value))
+                  }
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+                >
+                  {Object.entries(contracts).map(([networkId, contract]) => {
+                    const networkNames = {
+                      "11155111": "Ethereum Sepolia",
+                      "1301": "Unichain Testnet",
+                      "314159": "Filecoin Calibration Testnet",
+                      "80002": "Polygon Amoy",
+                      "296": "Hedera Testnet",
+                      "137": "Polygon Mainnet"
+                    };
+                    return (
+                      <option key={networkId} value={networkId}>
+                        {networkNames[networkId as keyof typeof networkNames] || `Network ID: ${networkId}`}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+              <Button onClick={handlePopupSubmit} className="mr-2">
+                Submit
+              </Button>
+              <Button onClick={() => setShowPopup(false)}>Cancel</Button>
+            </div>
+          </div>
+        )}
+
+        {/* Popup for Redeem Action */}
+        {showRedeemPopup && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white p-4 rounded shadow-lg">
+              <h3 className="text-lg font-bold mb-2">Redeem Token</h3>
+              <div className="mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Redeem ID
+                </label>
+                <input
+                  type="text"
+                  value={redeemId}
+                  onChange={(e) => setRedeemId(e.target.value)}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Select Network
+                </label>
+                <select
+                  value={selectedNetworkId}
+                  onChange={(e) => setSelectedNetworkId(Number(e.target.value))}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+                >
+                  {Object.entries(contracts).map(([networkId, contract]) => {
+                    const networkNames = {
+                      "11155111": "Ethereum Sepolia",
+                      "1301": "Unichain Testnet",
+                      "314159": "Filecoin Calibration Testnet",
+                      "80002": "Polygon Amoy",
+                      "296": "Hedera Testnet",
+                      "137": "Polygon Mainnet"
+                    };
+                    return (
+                      <option key={networkId} value={networkId}>
+                        {networkNames[networkId as keyof typeof networkNames] || `Network ID: ${networkId}`}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+              <Button onClick={handleRedeemSubmit} className="mr-2">
+                Submit
+              </Button>
+              <Button onClick={() => setShowRedeemPopup(false)}>Cancel</Button>
+            </div>
+          </div>
+        )}
       </motion.div>
 
       {/* Main Content */}
