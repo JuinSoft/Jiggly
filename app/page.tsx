@@ -13,8 +13,6 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import axios from "axios";
-import { createRedeemableLink, redeemLink } from "@/lib/contracts";
-import { getWeb3Provider, getSigner } from "@dynamic-labs/ethers-v6";
 import { isEthereumWallet } from "@dynamic-labs/ethereum";
 import { getContractByNetworkId } from "../constants/contracts";
 import { usdcContractAbi, redeemableLinkAbi } from "../constants/abi";
@@ -125,19 +123,30 @@ export default function Main() {
                   getContractByNetworkId(Number(network)).redeemableLink,
                   BigInt(
                     "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-                  ), // Approve unlimited amount
+                  ),
                 ],
               });
               await publicClient.waitForTransactionReceipt({ hash: approveTx });
             }
 
-            const client = await primaryWallet.getWalletClient(network.toString());
-            const createLink = await client.writeContract({
+            await client.writeContract({
               address: getContractByNetworkId(Number(network)).redeemableLink,
               abi: redeemableLinkAbi,
               functionName: "createLink",
               args: [response.linkId, BigInt(response.amount)]
             });
+            break;
+
+          case "link_redeem":
+            console.log("Redeeming link: ", response);
+            const redeemed = await client.writeContract({
+              address: getContractByNetworkId(network).redeemableLink,
+              abi: redeemableLinkAbi,
+              functionName: "redeem",
+              args: [response.linkId],
+            });
+            const receipt = await publicClient.waitForTransactionReceipt({ hash: redeemed });
+            console.log("Redeemed: ", receipt);
             break;
 
           case "transfer":
@@ -177,7 +186,6 @@ export default function Main() {
         console.error("Not supported");
         return;
       }
-      console.log("Transaction handled");
     } catch (error) {
       console.error("Transaction failed:", error);
     }
