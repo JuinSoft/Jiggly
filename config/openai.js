@@ -66,7 +66,6 @@ For transfer or swap operations, if any required fields are missing, provide an 
 
 function parseTransactionDetails(aiResponse) {
     try {
-        console.log("AI response:", aiResponse);
         return JSON.parse(aiResponse);
     } catch (error) {
         console.log("Error: ", error.message, aiResponse);

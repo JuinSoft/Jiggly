@@ -28,6 +28,7 @@ async function fetchPartnerLogos() {
   }
   return response.json();
 }
+import { getQuote, sendTransaction } from "@/lib/transactions";
 
 export default function Main() {
   const [partnerLogos, setPartnerLogos] = useState<string[]>([]);
@@ -77,17 +78,19 @@ export default function Main() {
     { name: "Notifications", icon: Bell, href: "/notifications" },
   ];
 
-  const handleTransaction = async (response: any) => {
+  const handleTransaction = async (response: any) => {    
     if (!primaryWallet) {
       console.error("No wallet connected");
       return;
     }
 
+    console.log("Handling transaction");
+
     try {
       if (primaryWallet && isEthereumWallet(primaryWallet) && network) {
         const client = await primaryWallet.getWalletClient(network.toString());
         const publicClient = await primaryWallet.getPublicClient();
-
+        console.log("Response received: ", response);
         switch (response.type) {
           case "link_create":
             const balance = await publicClient.readContract({
@@ -132,12 +135,37 @@ export default function Main() {
               Number(network)
             );
             break;
+
+          case "transfer":
+            if (response.network) {
+              console.log("Getting quote");
+              const quote = await getQuote(
+                response.network.fromChain,
+                response.network.toChain,
+                response.token.fromToken,
+                response.token.toToken,
+                response.amount.toString(),
+                response.toAddress,
+                primaryWallet.address
+              );
+
+              const transactionReceipt = await sendTransaction(
+                primaryWallet,
+                response.toAddress,
+                response.amount.toString(),
+                quote.transactionRequest
+              );
+
+              console.log("transactionReceipt", transactionReceipt);
+            }
+            break;
         }
         return;
       } else {
         console.error("Not supported");
         return;
       }
+      console.log("Transaction handled");
     } catch (error) {
       console.error("Transaction failed:", error);
     }
@@ -156,7 +184,6 @@ export default function Main() {
       const parsedResponse = response.data;
 
       let assistantMessage = "";
-
       if (parsedResponse.type === "clarification" && Array.isArray(parsedResponse.questions)) {
         // Format clarification questions
         assistantMessage = parsedResponse.questions.join("\n");

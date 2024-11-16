@@ -37,18 +37,20 @@ export async function POST(request) {
       if (!parsedResponse.token?.fromToken) missingFields.push('fromToken');
       if (!parsedResponse.token?.toToken) missingFields.push('toToken');
       if (!parsedResponse.amount) missingFields.push('amount');
-      if (!parsedResponse.network?.toAddress) missingFields.push('toAddress');
+      if (!parsedResponse.toAddress) missingFields.push('toAddress');
 
       if (missingFields.length > 0) {
+        console.log("Missing: ", missingFields)
         return NextResponse.json({
           type: "clarification",
           message: `Please provide the following information for the transaction: ${missingFields.join(', ')}. Example: "Transfer 1000000 wei of USDT token from chain POL to USDT token in chain POL to address 0x1704e5Dc4Eff82c9218Ded9a5864B2080b6428be"`,
         });
       }
+      else {
+        return NextResponse.json(parsedResponse);
+      }
     }
-
-    console.log("Parsed response 2: ",parsedResponse);
-
+  
     // Handle clarification requests
     if (parsedResponse.type === 'clarification') {
       return NextResponse.json(parsedResponse);
@@ -66,35 +68,7 @@ export async function POST(request) {
         // No additional processing needed for redemption
         break;
 
-      case 'transfer':
-        // Existing transfer logic
-        console.log("Inside Transfer type");
-        if (parsedResponse.network) {
-          console.log("Getting quote");
-          const { primaryWallet } = useDynamicContext();
-          const quote = await getQuote(
-            parsedResponse.network.fromChain,
-            parsedResponse.network.toChain,
-            parsedResponse.token.fromToken,
-            parsedResponse.token.toToken,
-            parsedResponse.amount.toString(),
-            primaryWallet.address
-          );
-
-          console.log("Quote: ", quote);
-
-          const transactionReceipt = await sendTransaction(
-            primaryWallet,
-            parsedResponse.network.toAddress,
-            parsedResponse.amount.toString(),
-            quote.transaction
-          );
-
-          console.log("transactionReceipt", transactionReceipt);
-        }
-        break;
-
-      default:
+        default:
         // Handle unknown type
         return NextResponse.json({
           type: 'unknown',
