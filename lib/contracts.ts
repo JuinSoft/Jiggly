@@ -1,13 +1,12 @@
 import { getSigner } from '@dynamic-labs/ethers-v6';
 import { isEthereumWallet } from '@dynamic-labs/ethereum';
 import { ethers } from 'ethers';
-
-
-export const USDC_ADDRESS = "0x2480C5e37Cf30967CacDd953550D56E3Fe63a19A";
-export const REDEEMABLE_LINK_ADDRESS = "0xd6f8084fFa6aF6B6b0E1493479a21456457ee071";
+import { randomUUID } from 'crypto';
+import { redeemableLinkAbi } from '../constants/abi';
+import { getContractByNetworkId } from '../constants/contracts';
 
 export function generateLinkId(): string {
-  return "12";
+  return randomUUID();
 }
 
 export async function createRedeemableLink(
@@ -20,7 +19,7 @@ export async function createRedeemableLink(
   if (primaryWallet && isEthereumWallet(primaryWallet) && network) {
     const publicClient = await primaryWallet.getPublicClient()
     const created = await publicClient.readContract({
-        address: REDEEMABLE_LINK_ADDRESS,
+        address: getContractByNetworkId(network).redeemableLink,
         abi: redeemableLinkAbi,
         functionName: 'createLink',
         args: [linkId, ethers.parseEther(amount.toString())],
@@ -32,12 +31,13 @@ export async function createRedeemableLink(
 
 export async function redeemLink(
   primaryWallet: any,
-  linkId: string
+  linkId: string,
+  network: number
 ) {
-  if (primaryWallet && isEthereumWallet(primaryWallet)) {
+  if (primaryWallet && isEthereumWallet(primaryWallet) && network) {
     const publicClient = await primaryWallet.getPublicClient()
     const redeemed = await publicClient.readContract({
-      address: REDEEMABLE_LINK_ADDRESS,
+      address: getContractByNetworkId(network).redeemableLink,
       abi: redeemableLinkAbi,
       functionName: 'redeem',
       args: [linkId],

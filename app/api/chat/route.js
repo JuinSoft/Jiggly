@@ -21,15 +21,6 @@ export async function POST(request) {
     });
 
     const response = completion.choices[0].message.content;
-    // const response = JSON.stringify({
-    //   type: "link_create",
-    //   network: "Ethereum",
-    //   token: "USDC",
-    //   amount: 1,
-    //   linkId: "1",
-    //   additionalInfo: "",
-    //   thoughtProcess: ""
-    // });
     const parsedResponse = parseTransactionDetails(response);
 
     // Handle link creation

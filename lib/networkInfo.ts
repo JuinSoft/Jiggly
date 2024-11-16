@@ -1,17 +1,18 @@
 import { defineChain } from 'viem'
 import explorers from '../constants/explorers.json'
 
-export const arbitrum = defineChain({
-  id: 42161,
-  name: 'Arbitrum',
+// Ethereum Sepolia
+export const ethereumSepolia = defineChain({
+  id: 11155111,
+  name: 'Ethereum Sepolia',
   rpcUrls: {
-    default: { http: ['https://arb1.arbitrum.io/rpc'] },
-    public: { http: ['https://arb1.arbitrum.io/rpc'] },
+    default: { http: ['wss://ethereum-sepolia-rpc.publicnode.com'] },
+    public: { http: ['wss://ethereum-sepolia-rpc.publicnode.com'] },
   },
   blockExplorers: {
     default: {
-      name: 'Arbitrum Explorer',
-      url: explorers['42161'].explorers[0].url,
+      name: 'Sepolia Explorer',
+      url: explorers['11155111'].explorers[0].url,
     },
   },
   nativeCurrency: {
@@ -21,17 +22,18 @@ export const arbitrum = defineChain({
   },
 })
 
-export const aurora = defineChain({
-  id: 1313161554,
-  name: 'Aurora',
+// Unichain Testnet
+export const unichainTestnet = defineChain({
+  id: 1301,
+  name: 'Unichain Testnet',
   rpcUrls: {
-    default: { http: ['https://mainnet.aurora.dev'] },
-    public: { http: ['https://mainnet.aurora.dev'] },
+    default: { http: ['https://sepolia.unichain.org'] },
+    public: { http: ['https://sepolia.unichain.org'] },
   },
   blockExplorers: {
     default: {
-      name: 'Aurora Explorer',
-      url: explorers['1313161554'].explorers[0].url,
+      name: 'Unichain Explorer',
+      url: explorers['1301'].explorers[0].url,
     },
   },
   nativeCurrency: {
@@ -41,151 +43,39 @@ export const aurora = defineChain({
   },
 })
 
-export const bnbSmartChain = defineChain({
-  id: 56,
-  name: 'BNB Smart Chain',
+// Filecoin Calibration Testnet
+export const filecoinCalibration = defineChain({
+  id: 314159,
+  name: 'Filecoin Calibration Testnet',
   rpcUrls: {
-    default: { http: ['https://bsc-dataseed.binance.org/'] },
-    public: { http: ['https://bsc-dataseed.binance.org/'] },
+    default: { http: ['https://filecoin-calibration.drpc.org'] },
+    public: { http: ['https://filecoin-calibration.drpc.org'] },
   },
   blockExplorers: {
     default: {
-      name: 'BSC Explorer',
-      url: explorers['56'].explorers[0].url,
+      name: 'Filecoin Explorer',
+      url: explorers['314159'].explorers[0].url,
     },
   },
   nativeCurrency: {
     decimals: 18,
-    name: 'Binance Coin',
-    symbol: 'BNB',
+    name: 'Filecoin',
+    symbol: 'FIL',
   },
 })
 
-export const base = defineChain({
-  id: 8453,
-  name: 'Base',
+// Polygon Amos
+export const polygonAmos = defineChain({
+  id: 80002,
+  name: 'Polygon Amos',
   rpcUrls: {
-    default: { http: ['https://mainnet.base.org'] },
-    public: { http: ['https://mainnet.base.org'] },
-  },
-  blockExplorers: {
-    default: {
-      name: 'Base Explorer',
-      url: explorers['8453'].explorers[0].url,
-    },
-  },
-  nativeCurrency: {
-    decimals: 18,
-    name: 'Ether',
-    symbol: 'ETH',
-  },
-})
-
-export const celo = defineChain({
-  id: 42220,
-  name: 'Celo',
-  rpcUrls: {
-    default: { http: ['https://forno.celo.org'] },
-    public: { http: ['https://forno.celo.org'] },
-  },
-  blockExplorers: {
-    default: {
-      name: 'Celo Explorer',
-      url: explorers['42220'].explorers[0].url,
-    },
-  },
-  nativeCurrency: {
-    decimals: 18,
-    name: 'Celo',
-    symbol: 'CELO',
-  },
-})
-
-export const chiliz = defineChain({
-    id: 88888,
-    name: 'Chiliz',
-    rpcUrls: {
-      default: { http: ['https://rpc.chiliz.com'] },
-      public: { http: ['https://rpc.chiliz.com'] },
-    },
-    nativeCurrency: {
-      decimals: 18,
-      name: 'Chiliz',
-      symbol: 'CHZ',
-    },
-});
-
-export const ethereum = defineChain({
-  id: 1,
-  name: 'Ethereum',
-  rpcUrls: {
-    default: { http: ['https://mainnet.infura.io/v3/YOUR-PROJECT-ID'] },
-    public: { http: ['https://mainnet.infura.io/v3/YOUR-PROJECT-ID'] },
-  },
-  blockExplorers: {
-    default: {
-      name: 'Etherscan',
-      url: explorers['1'].explorers[0].url,
-    },
-  },
-  nativeCurrency: {
-    decimals: 18,
-    name: 'Ether',
-    symbol: 'ETH',
-  },
-})
-
-export const gnosis = defineChain({
-  id: 100,
-  name: 'Gnosis',
-  rpcUrls: {
-    default: { http: ['https://rpc.gnosischain.com'] },
-    public: { http: ['https://rpc.gnosischain.com'] },
-  },
-  blockExplorers: {
-    default: {
-      name: 'Gnosis Explorer',
-      url: explorers['100'].explorers[0].url,
-    },
-  },
-  nativeCurrency: {
-    decimals: 18,
-    name: 'Gnosis',
-    symbol: 'XDAI',
-  },
-})
-
-export const optimism = defineChain({
-  id: 10,
-  name: 'Optimism',
-  rpcUrls: {
-    default: { http: ['https://mainnet.optimism.io'] },
-    public: { http: ['https://mainnet.optimism.io'] },
-  },
-  blockExplorers: {
-    default: {
-      name: 'Optimism Explorer',
-      url: explorers['10'].explorers[0].url,
-    },
-  },
-  nativeCurrency: {
-    decimals: 18,
-    name: 'Ether',
-    symbol: 'ETH',
-  },
-})
-
-export const polygon = defineChain({
-  id: 137,
-  name: 'Polygon',
-  rpcUrls: {
-    default: { http: ['https://polygon-rpc.com'] },
-    public: { http: ['https://polygon-rpc.com'] },
+    default: { http: ['wss://polygon-amoy-bor-rpc.publicnode.com'] },
+    public: { http: ['wss://polygon-amoy-bor-rpc.publicnode.com'] },
   },
   blockExplorers: {
     default: {
       name: 'Polygon Explorer',
-      url: explorers['137'].explorers[0].url,
+      url: "https://www.oklink.com/amoy",
     },
   },
   nativeCurrency: {
@@ -195,79 +85,36 @@ export const polygon = defineChain({
   },
 })
 
-export const zora = defineChain({
-  id: 7777777,
-  name: 'Zora',
+// Hedera Testnet
+export const hederaTestnet = defineChain({
+  id: 296,
+  name: 'Hedera Testnet',
   rpcUrls: {
-    default: { http: ['https://rpc.zora.energy'] },
-    public: { http: ['https://rpc.zora.energy'] },
+    default: { http: ['https://testnet.hashio.io/api'] },
+    public: { http: ['https://testnet.hashio.io/api'] },
   },
   blockExplorers: {
     default: {
-      name: 'Zora Explorer',
-      url: explorers['7777777'].explorers[0].url,
+      name: 'Hedera Explorer',
+      url: "https://hashscan.io/testnet",
     },
   },
   nativeCurrency: {
     decimals: 18,
-    name: 'Ether',
-    symbol: 'ETH',
+    name: 'Hedera',
+    symbol: 'HBAR',
   },
 })
 
-export const zksync = defineChain({
-  id: 324,
-  name: 'zkSync',
-  rpcUrls: {
-    default: { http: ['https://mainnet.era.zksync.io'] },
-    public: { http: ['https://mainnet.era.zksync.io'] },
-  },
-  blockExplorers: {
-    default: {
-      name: 'zkSync Explorer',
-      url: explorers['324'].explorers[0].url,
-    },
-  },
-  nativeCurrency: {
-    decimals: 18,
-    name: 'Ether',
-    symbol: 'ETH',
-  },
-})
-
-export const bitkub = defineChain({
-  id: 96,
-  name: 'Bitkub',
-  rpcUrls: {
-    default: { http: ['https://rpc.bitkubchain.io'] },
-    public: { http: ['https://rpc.bitkubchain.io'] }
-  },
-  blockExplorers: {
-    default: { name: "Bitkub", url: explorers['96'].explorers[0].url }
-  },
-  nativeCurrency: {
-    decimals: 18,
-    name: 'Bitkub Coin',
-    symbol: 'KUB'
-  },
-})
-
-const supportedNetworks = [
-  arbitrum,
-  aurora,
-  bnbSmartChain,
-  base,
-  celo,
-  chiliz,
-  ethereum,
-  gnosis,
-  optimism,
-  polygon,
-  zora,
-  zksync,
+const supportedTestNetworks = [
+  ethereumSepolia,
+  unichainTestnet,
+  filecoinCalibration,
+  polygonAmos,
+  hederaTestnet,
 ]
 
-export const evmNetworks = supportedNetworks.map((chain) => ({
+export const evmTestNetworks = supportedTestNetworks.map((chain) => ({
   blockExplorerUrls: [chain.blockExplorers?.default?.url!],
   chainId: chain.id,
   chainName: chain.name,
