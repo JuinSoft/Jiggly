@@ -16,6 +16,9 @@ import axios from 'axios';
 import { createRedeemableLink, redeemLink } from '@/lib/contracts';
 import { getWeb3Provider,getSigner, } from '@dynamic-labs/ethers-v6'
 import { isEthereumWallet } from '@dynamic-labs/ethereum'
+import { getContractByNetworkId } from '../constants/contracts'
+import { usdcContractAbi } from '../constants/abi'
+import { parseGwei } from 'viem';
 
 export default function Main() {
   // State hooks
@@ -63,9 +66,43 @@ export default function Main() {
 
     try {
       if (primaryWallet && isEthereumWallet(primaryWallet) && network) {
-        console.log(response)
+        const client = await primaryWallet.getWalletClient(network.toString());
+        const publicClient = await primaryWallet.getPublicClient();
+
         switch (response.type) {
           case 'link_create':
+            const balance = await publicClient.readContract({
+              address: getContractByNetworkId(Number(network)).usdc,
+              abi: usdcContractAbi,
+              functionName: 'balanceOf',
+              args: [primaryWallet.address],
+            });
+
+            if (Number(balance) < response.amount) {
+              console.error('Insufficient balance');
+              return;
+            }
+
+            const approveAmount = await publicClient.readContract({
+              address: getContractByNetworkId(Number(network)).usdc,
+              abi: usdcContractAbi,
+              functionName: 'allowance',
+              args: [
+                primaryWallet.address,
+                getContractByNetworkId(Number(network)).redeemableLink,
+              ],
+            });
+
+            if (Number(approveAmount) < response.amount) {
+              const approveTx = await client.writeContract({
+                address: getContractByNetworkId(Number(network)).usdc,
+                abi: usdcContractAbi,
+                functionName: 'approve',
+                args: [getContractByNetworkId(Number(network)).redeemableLink, BigInt(response.amount)],
+              });
+              await publicClient.waitForTransactionReceipt({ hash: approveTx });
+            }
+
             await createRedeemableLink(
               primaryWallet,
               response.amount,
@@ -75,8 +112,7 @@ export default function Main() {
             break;
         }
         return;
-      }
-      else {
+      } else {
         console.error('Not supported');
         return;
       }
@@ -115,6 +151,37 @@ export default function Main() {
       setIsLoading(false);
     }
   };
+
+  // async function ensureUSDCApproval(primaryWallet: any, network: any, tokenAmount: any) {
+  //   if (primaryWallet && isEthereumWallet(primaryWallet) && network) {
+  //     const client = await primaryWallet.getWalletClient(network.toString());
+  //     const publicClient = await primaryWallet.getPublicClient();
+
+  //     const approveAmount = await publicClient.readContract({
+  //       address: getContractByNetworkId(Number(network)).usdc,
+  //       abi: usdcContractAbi,
+  //       functionName: 'allowance',
+  //       args: [
+  //         primaryWallet.address,
+  //         getContractByNetworkId(Number(network)).usdc,
+  //       ],
+  //     });
+
+  //     if (Number(approveAmount) < tokenAmount) {
+  //       const approveTx = await client.writeContract({
+  //         address: getContractByNetworkId(Number(network)).usdc,
+  //         abi: usdcContractAbi,
+  //         functionName: 'approve',
+  //         args: [getContractByNetworkId(Number(network)).usdc, BigInt(tokenAmount)],
+  //         gasPrice: Number(network) === 545 ? parseGwei('20') : undefined,
+  //       });
+
+  //       await publicClient.waitForTransactionReceipt({
+  //         hash: approveTx,
+  //       });
+  //     }
+  //   }
+  // }
 
   return (
     <div className={`flex h-screen bg-gray-50 ${isDarkMode ? 'dark' : ''}`}>
