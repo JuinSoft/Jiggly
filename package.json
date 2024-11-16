@@ -14,6 +14,7 @@
     "@dynamic-labs/ethers-v6": "3.4.2",
     "@dynamic-labs/flow": "3.4.2",
     "@dynamic-labs/sdk-react-core": "3.4.2",
+    "@ironblocks/firewall-consumer": "^1.0.17",
     "@radix-ui/react-separator": "^1.1.0",
     "@radix-ui/react-slot": "^1.1.0",
     "axios": "^1.7.7",
