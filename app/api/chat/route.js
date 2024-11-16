@@ -26,11 +26,9 @@ export async function POST(request) {
     const response = completion.choices[0].message.content;
     const parsedResponse = parseTransactionDetails(response);
 
-    console.log("Parsed response:", parsedResponse);
-
     // Directly ask for required parameters if transaction type is detected
     // Directly ask for required parameters if transaction type is detected
-    if (parsedResponse.type === 'transfer' || parsedResponse.type === 'swap') {
+    if (parsedResponse.type === 'transfer') {
       const missingFields = [];
       if (!parsedResponse.network?.fromChain) missingFields.push('fromChain');
       if (!parsedResponse.network?.toChain) missingFields.push('toChain');
@@ -50,6 +48,11 @@ export async function POST(request) {
         return NextResponse.json(parsedResponse);
       }
     }
+
+    if (parsedResponse.type === 'swap') {
+      console.log("Swap transaction: ", parsedResponse);
+      return NextResponse.json(parsedResponse);
+    }
   
     // Handle clarification requests
     if (parsedResponse.type === 'clarification') {
@@ -59,6 +62,7 @@ export async function POST(request) {
     // Handle different transaction types
     switch (parsedResponse.type) {
       case "link_create":
+        console.log("Link create: ", parsedResponse);
         const linkId = generateLinkId();
         parsedResponse.linkId = linkId;
         parsedResponse.additionalInfo = `Share this link ID for redemption: ${linkId}`;

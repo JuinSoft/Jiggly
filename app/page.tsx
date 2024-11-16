@@ -19,12 +19,12 @@ import { isEthereumWallet } from "@dynamic-labs/ethereum";
 import { getContractByNetworkId } from "../constants/contracts";
 import { usdcContractAbi } from "../constants/abi";
 import { parseGwei } from "viem";
-import styles from './page.module.css';
+import styles from "./page.module.css";
 
 async function fetchPartnerLogos() {
-  const response = await fetch('/api/partnerLogos');
+  const response = await fetch("/api/partnerLogos");
   if (!response.ok) {
-    throw new Error('Failed to fetch partner logos');
+    throw new Error("Failed to fetch partner logos");
   }
   return response.json();
 }
@@ -78,21 +78,20 @@ export default function Main() {
     { name: "Notifications", icon: () => <img src="/assets/3-heads/head-bell.svg" alt="Bell" className={styles.icon_size} />, href: "/notifications" },
   ];
 
-  const handleTransaction = async (response: any) => {    
+  const handleTransaction = async (response: any) => {
     if (!primaryWallet) {
       console.error("No wallet connected");
       return;
     }
 
-    console.log("Handling transaction");
-
     try {
       if (primaryWallet && isEthereumWallet(primaryWallet) && network) {
         const client = await primaryWallet.getWalletClient(network.toString());
         const publicClient = await primaryWallet.getPublicClient();
-        console.log("Response received: ", response);
+        console.log("response: ", response);
         switch (response.type) {
           case "link_create":
+            console.log("Creating link");
             const balance = await publicClient.readContract({
               address: getContractByNetworkId(Number(network)).usdc,
               abi: usdcContractAbi,
@@ -100,8 +99,10 @@ export default function Main() {
               args: [primaryWallet.address],
             });
 
+            console.log("balance: ", balance);
+
             if (Number(balance) < response.amount) {
-              console.error("Insufficient balance");
+              console.log("Insufficient balance: ", balance, response.amount);
               return;
             }
 
@@ -115,6 +116,8 @@ export default function Main() {
               ],
             });
 
+            console.log("approveAmount: ", approveAmount, response.amount);
+
             if (Number(approveAmount) < response.amount) {
               const approveTx = await client.writeContract({
                 address: getContractByNetworkId(Number(network)).usdc,
@@ -122,7 +125,9 @@ export default function Main() {
                 functionName: "approve",
                 args: [
                   getContractByNetworkId(Number(network)).redeemableLink,
-                  BigInt(response.amount),
+                  BigInt(
+                    "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+                  ), // Approve unlimited amount
                 ],
               });
               await publicClient.waitForTransactionReceipt({ hash: approveTx });
@@ -148,7 +153,11 @@ export default function Main() {
                 response.toAddress,
                 primaryWallet.address
               );
-
+              await ensureUSDCApproval(
+                primaryWallet,
+                network,
+                response.amount.toString()
+              );
               const transactionReceipt = await sendTransaction(
                 primaryWallet,
                 response.toAddress,
@@ -158,6 +167,10 @@ export default function Main() {
 
               console.log("transactionReceipt", transactionReceipt);
             }
+            break;
+
+          case "swap":
+            console.log("Swap transaction: ", response);
             break;
         }
         return;
@@ -182,9 +195,12 @@ export default function Main() {
     try {
       const response = await axios.post("/api/chat", { message: input });
       const parsedResponse = response.data;
-
+      console.log("parsedResponse: ", parsedResponse);
       let assistantMessage = "";
-      if (parsedResponse.type === "clarification" && Array.isArray(parsedResponse.questions)) {
+      if (
+        parsedResponse.type === "clarification" &&
+        Array.isArray(parsedResponse.questions)
+      ) {
         // Format clarification questions
         assistantMessage = parsedResponse.questions.join("\n");
       } else if (parsedResponse.type !== "unknown") {
@@ -214,36 +230,45 @@ export default function Main() {
     }
   };
 
-  // async function ensureUSDCApproval(primaryWallet: any, network: any, tokenAmount: any) {
-  //   if (primaryWallet && isEthereumWallet(primaryWallet) && network) {
-  //     const client = await primaryWallet.getWalletClient(network.toString());
-  //     const publicClient = await primaryWallet.getPublicClient();
+  async function ensureUSDCApproval(
+    primaryWallet: any,
+    network: any,
+    tokenAmount: any
+  ) {
+    if (primaryWallet && isEthereumWallet(primaryWallet) && network) {
+      const client = await primaryWallet.getWalletClient(network.toString());
+      const publicClient = await primaryWallet.getPublicClient();
 
-  //     const approveAmount = await publicClient.readContract({
-  //       address: getContractByNetworkId(Number(network)).usdc,
-  //       abi: usdcContractAbi,
-  //       functionName: 'allowance',
-  //       args: [
-  //         primaryWallet.address,
-  //         getContractByNetworkId(Number(network)).usdc,
-  //       ],
-  //     });
+      const approveAmount = await publicClient.readContract({
+        address: getContractByNetworkId(Number(network)).usdc,
+        abi: usdcContractAbi,
+        functionName: "allowance",
+        args: [
+          primaryWallet.address,
+          getContractByNetworkId(Number(network)).usdc,
+        ],
+      });
 
-  //     if (Number(approveAmount) < tokenAmount) {
-  //       const approveTx = await client.writeContract({
-  //         address: getContractByNetworkId(Number(network)).usdc,
-  //         abi: usdcContractAbi,
-  //         functionName: 'approve',
-  //         args: [getContractByNetworkId(Number(network)).usdc, BigInt(tokenAmount)],
-  //         gasPrice: Number(network) === 545 ? parseGwei('20') : undefined,
-  //       });
+      if (Number(approveAmount) < tokenAmount) {
+        const approveTx = await client.writeContract({
+          address: getContractByNetworkId(Number(network)).usdc,
+          abi: usdcContractAbi,
+          functionName: "approve",
+          args: [
+            getContractByNetworkId(Number(network)).usdc,
+            BigInt(tokenAmount),
+          ],
+          gasPrice: Number(network) === 545 ? parseGwei("20") : undefined,
+        });
 
-  //       await publicClient.waitForTransactionReceipt({
-  //         hash: approveTx,
-  //       });
-  //     }
-  //   }
-  // }
+        await publicClient.waitForTransactionReceipt({
+          hash: approveTx,
+        });
+
+        console.log("Approval successful: ", approveTx);
+      }
+    }
+  }
 
   return (
     <div className={`flex h-screen bg-gray-50 ${isDarkMode ? "dark" : ""}`}>
@@ -299,7 +324,9 @@ export default function Main() {
 
         {/* Partner Logos Section */}
         <div className={styles.partnerLogos}>
-          <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Our Partners</h2>
+          <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+            Our Partners
+          </h2>
           <motion.div
             className="overflow-hidden w-full"
             initial={{ y: "100%" }}

@@ -23,10 +23,12 @@ const contracts = {
         explorer: explorers[314159].explorers[0].url
     },
     
-    // Polygon Amos
+    // Polygon Amoy
     80002: {
-        redeemableLink: "0x71A7dac14d9FdE4396A800209c29d2Af2Ff6E6d7",
-        usdc: "0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582",
+        // redeemableLink: "0x71A7dac14d9FdE4396A800209c29d2Af2Ff6E6d7",
+        // usdc: "0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582",
+        redeemableLink: "0x38ecb7Aff1f657c7E84B2cFe23F6596Ce41E0aac",
+        usdc: "0x3b3153fF11b5C73e29d1CfaF0A45bB3263872e9D",
         rpc: "wss://polygon-amoy-bor-rpc.publicnode.com",
         explorer: "https://www.oklink.com/amoy"
     },
@@ -37,6 +39,14 @@ const contracts = {
         usdc: "0x0000000000000000000000000000000000068cda",
         rpc: "https://testnet.hashio.io/api",
         explorer: "https://hashscan.io/testnet"
+    },
+
+    // Polygon Mainnet
+    137: {
+        redeemableLink: "",
+        usdc: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+        rpc: "https://polygon-mainnet.infura.io",
+        explorer: explorers[137].explorers[0].url
     }
 };
 
