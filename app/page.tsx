@@ -968,6 +968,27 @@ export default function Main() {
             </div>
           </div>
         )}
+
+        <div className="mt-6">
+          <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+            Our Partners
+          </h2>
+          <motion.div
+            className="flex flex-wrap justify-center items-center gap-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1 }}
+          >
+            {partnerLogos.map((logo, index) => (
+              <img
+                key={index}
+                src={`/partner-logos/${logo}`}
+                alt={`${logo}`}
+                className="h-16 w-16 object-contain"
+              />
+            ))}
+          </motion.div>
+        </div>
       </motion.div>
 
       {/* Main Content */}
